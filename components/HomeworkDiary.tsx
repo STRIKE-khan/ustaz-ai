@@ -346,7 +346,7 @@ const HomeworkDiary: React.FC<HomeworkDiaryProps> = ({ classes, homework, addHom
                                         <img src="/school-logo.png" className="w-12 h-12 object-contain" />
                                     </div>
                                     <div className="text-center">
-                                        <p className="text-xs tracking-widest text-gray-500 uppercase font-bold">Roots of Wisdom</p>
+                                        <p className="text-xs tracking-widest text-gray-500 uppercase font-bold">ROOTS OF WISDOM</p>
                                         <h1 className="text-xl font-bold text-gray-800 font-serif">Homework Diary</h1>
                                     </div>
                                 </div>

@@ -246,7 +246,7 @@ const NoticeBoard: React.FC<NoticeBoardProps> = ({ notices, addNotice, deleteNot
                                     <img src="/school-logo.png" alt="Logo" className="w-12 h-12 object-contain" />
                                 </div>
                                 <div className="text-center">
-                                    <h1 className="text-xl font-bold text-gray-800" style={{ fontFamily: 'Georgia, serif' }}>School Name</h1>
+                                    <h1 className="text-xl font-bold text-gray-800 uppercase" style={{ fontFamily: 'Georgia, serif' }}>ROOTS OF WISDOM</h1>
                                     <p className="text-xs text-gray-600">Est. 1990</p>
                                 </div>
                             </div>

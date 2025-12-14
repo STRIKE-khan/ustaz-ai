@@ -45,7 +45,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
 
                 {/* School name */}
                 <div className="bg-white/10 backdrop-blur px-6 py-3 rounded-xl inline-block mb-8">
-                    <p className="text-white/90 font-medium">Roots of Wisdom School & College</p>
+                    <p className="text-white/90 font-medium">ROOTS OF WISDOM SCHOOL & COLLEGE</p>
                 </div>
             </div>
 

@@ -286,9 +286,9 @@ const TestGenerator: React.FC<TestGeneratorProps> = ({ classes }) => {
                 className="bg-white p-8 mx-auto shadow-2xl relative overflow-hidden"
                 style={{ width: '800px', minHeight: '1000px', background: 'linear-gradient(135deg, #ffffff 0%, #f0f4ff 100%)' }}
               >
-                {/* School Logo in Circle */}
-                <div className="absolute top-4 right-4 w-20 h-20 rounded-full border-4 border-indigo-600 overflow-hidden bg-white shadow-lg flex items-center justify-center">
-                  <img src="/school-logo.png" alt="School Logo" className="w-16 h-16 object-contain" />
+                {/* School Logo */}
+                <div className="absolute top-4 right-4 w-20 h-20 flex items-center justify-center">
+                  <img src="/school-logo.png" alt="School Logo" className="w-full h-full object-contain filter drop-shadow-md" />
                 </div>
 
                 {/* Header */}

@@ -179,9 +179,9 @@ const AttendanceManager: React.FC<AttendanceManagerProps> = ({ classes }) => {
               className="bg-white p-8 min-w-[600px] relative"
               style={{ background: 'linear-gradient(to bottom right, #ffffff, #f0f4ff)' }}
             >
-              {/* School Logo in Circle */}
-              <div className="absolute top-4 right-4 w-16 h-16 rounded-full border-3 border-indigo-600 overflow-hidden bg-white shadow-lg flex items-center justify-center">
-                <img src="/school-logo.png" alt="School Logo" className="w-12 h-12 object-contain" />
+              {/* School Logo */}
+              <div className="absolute top-4 right-4 w-16 h-16 flex items-center justify-center">
+                <img src="/school-logo.png" alt="School Logo" className="w-full h-full object-contain filter drop-shadow-md" />
               </div>
 
               <div className="border-b-4 border-indigo-600 pb-4 mb-4">

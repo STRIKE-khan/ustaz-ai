@@ -63,7 +63,7 @@ const HomeworkDiary: React.FC<HomeworkDiaryProps> = ({ classes, homework, addHom
 
     const downloadSlide = async () => {
         if (!slideRef.current) return;
-        const canvas = await html2canvas(slideRef.current, { scale: 2 });
+        const canvas = await html2canvas(slideRef.current, { scale: 2, backgroundColor: null });
         const link = document.createElement('a');
         link.download = `homework-${selectedHomework?.subject || 'slide'}.png`;
         link.href = canvas.toDataURL('image/png');
@@ -73,7 +73,7 @@ const HomeworkDiary: React.FC<HomeworkDiaryProps> = ({ classes, homework, addHom
     const shareSlide = async () => {
         if (!slideRef.current) return;
         try {
-            const canvas = await html2canvas(slideRef.current, { scale: 2 });
+            const canvas = await html2canvas(slideRef.current, { scale: 2, backgroundColor: null });
             canvas.toBlob(async (blob: Blob | null) => {
                 if (!blob) return;
                 const file = new File([blob], 'homework.png', { type: 'image/png' });
@@ -113,8 +113,8 @@ const HomeworkDiary: React.FC<HomeworkDiaryProps> = ({ classes, homework, addHom
 
             {/* Add Homework Form */}
             {showForm && (
-                <div className="bg-white p-6 rounded-2xl shadow-lg mb-6 border border-gray-100 animate-fadeIn">
-                    <h3 className="font-bold text-lg mb-4 text-gray-800">Assign New Homework</h3>
+                <div className="bg-indigo-50 p-6 rounded-2xl shadow-lg mb-6 border border-indigo-100 animate-fadeIn">
+                    <h3 className="font-bold text-lg mb-4 text-indigo-900">📝 Assign New Homework</h3>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
@@ -122,7 +122,7 @@ const HomeworkDiary: React.FC<HomeworkDiaryProps> = ({ classes, homework, addHom
                             <select
                                 value={classId}
                                 onChange={(e) => { setClassId(e.target.value); setSubject(''); }}
-                                className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-indigo-500 outline-none transition-colors text-gray-900 bg-white"
+                                className="w-full p-4 border-2 border-indigo-200 rounded-xl focus:border-indigo-500 outline-none transition-colors text-gray-900 bg-white"
                             >
                                 <option value="">Select Class...</option>
                                 {classes.map((c) => (
@@ -140,7 +140,7 @@ const HomeworkDiary: React.FC<HomeworkDiaryProps> = ({ classes, homework, addHom
                                 onFocus={() => setShowSubjectSuggestions(true)}
                                 onBlur={() => setTimeout(() => setShowSubjectSuggestions(false), 200)}
                                 placeholder="Type or select subject..."
-                                className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-indigo-500 outline-none transition-colors text-gray-900 bg-white"
+                                className="w-full p-4 border-2 border-indigo-200 rounded-xl focus:border-indigo-500 outline-none transition-colors text-gray-900 bg-white"
                             />
                             {showSubjectSuggestions && subjectSuggestions.length > 0 && (
                                 <div className="absolute top-full left-0 right-0 mt-1 bg-white border-2 border-gray-200 rounded-xl shadow-lg z-10 max-h-48 overflow-y-auto">
@@ -171,7 +171,7 @@ const HomeworkDiary: React.FC<HomeworkDiaryProps> = ({ classes, homework, addHom
                             onChange={(e) => setDescription(e.target.value)}
                             placeholder="Describe the homework assignment..."
                             rows={3}
-                            className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-indigo-500 outline-none transition-colors text-gray-900 bg-white"
+                            className="w-full p-4 border-2 border-indigo-200 rounded-xl focus:border-indigo-500 outline-none transition-colors text-gray-900 bg-white"
                         />
                     </div>
 
@@ -182,14 +182,14 @@ const HomeworkDiary: React.FC<HomeworkDiaryProps> = ({ classes, homework, addHom
                             value={dueDate}
                             onChange={(e) => setDueDate(e.target.value)}
                             min={today}
-                            className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-indigo-500 outline-none transition-colors text-gray-900 bg-white"
+                            className="w-full p-4 border-2 border-indigo-200 rounded-xl focus:border-indigo-500 outline-none transition-colors text-gray-900 bg-white"
                         />
                     </div>
 
                     <div className="flex gap-3">
                         <button
                             onClick={handleSubmit}
-                            className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-3 rounded-xl hover:shadow-lg transition-all font-bold"
+                            className="bg-indigo-600 text-white px-8 py-3 rounded-xl hover:shadow-lg transition-all font-bold"
                         >
                             Save Homework
                         </button>
@@ -203,38 +203,57 @@ const HomeworkDiary: React.FC<HomeworkDiaryProps> = ({ classes, homework, addHom
                 </div>
             )}
 
-            {/* Homework List */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                {homework.map((hw) => {
+            {/* Homework List - Paper Style */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                {homework.map((hw, idx) => {
                     const daysLeft = getDaysRemaining(hw.dueDate);
                     const isOverdue = daysLeft === 'Overdue';
                     const isDueToday = daysLeft === 'Due Today';
-
+                    const rotation = idx % 2 === 0 ? 'rotate-1' : '-rotate-1';
+                    
                     return (
                         <div
                             key={hw.id}
                             onClick={() => setSelectedHomework(hw)}
-                            className={`p-5 rounded-2xl shadow-sm border-l-4 cursor-pointer hover:shadow-lg transition-all bg-white ${isOverdue ? 'border-red-500' : isDueToday ? 'border-yellow-500' : 'border-green-500'
-                                }`}
+                            className={`relative cursor-pointer hover:scale-105 transition-all ${rotation}`}
+                            style={{ transform: `rotate(${idx % 3 - 1}deg)` }}
                         >
-                            <div className="flex justify-between items-start mb-3">
-                                <span className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-bold">
-                                    {getClassName(hw.classId)}
-                                </span>
+                             {/* Tape on top */}
+                             <div 
+                                className="absolute -top-3 left-1/2 transform -translate-x-1/2 w-16 h-6 rounded-sm shadow-sm z-10"
+                                style={{ backgroundColor: '#e0f2f1', opacity: 0.9 }}
+                            ></div>
+
+                            <div 
+                                className="p-5 pt-6 rounded-sm shadow-lg border border-gray-200 min-h-[180px] relative bg-white"
+                                style={{ 
+                                    backgroundImage: 'repeating-linear-gradient(white 0px, white 24px, #f0f4f8 25px)',
+                                    boxShadow: '4px 4px 10px rgba(0,0,0,0.1)'
+                                }}
+                            >
                                 <button
                                     onClick={(e) => { e.stopPropagation(); deleteHomework(hw.id); }}
-                                    className="text-red-400 hover:text-red-600 p-1"
+                                    className="absolute top-2 right-2 text-gray-400 hover:text-red-500 p-1"
                                 >
-                                    <Trash2 size={16} />
+                                    <Trash2 size={14} />
                                 </button>
-                            </div>
-                            <h4 className="font-bold text-gray-800 mb-2 text-lg">{hw.subject}</h4>
-                            <p className="text-sm text-gray-500 mb-3 line-clamp-2">{hw.description}</p>
-                            <div className="flex items-center gap-2 text-sm">
-                                <Clock size={14} className={isOverdue ? 'text-red-500' : isDueToday ? 'text-yellow-500' : 'text-green-500'} />
-                                <span className={`font-medium ${isOverdue ? 'text-red-500' : isDueToday ? 'text-yellow-500' : 'text-green-500'}`}>
-                                    {daysLeft}
+                                
+                                <span className="inline-block px-2 py-1 bg-indigo-100 text-indigo-800 rounded text-xs font-bold mb-2">
+                                    {getClassName(hw.classId)}
                                 </span>
+
+                                <h4 className="font-bold text-gray-800 mb-2 text-lg font-serif">
+                                    {hw.subject}
+                                </h4>
+                                <p className="text-sm text-gray-600 mb-3 line-clamp-2" style={{ fontFamily: 'Georgia, serif' }}>
+                                    {hw.description}
+                                </p>
+                                <div className="flex items-center gap-2 text-sm mt-auto">
+                                    <Clock size={14} className={isOverdue ? 'text-red-500' : isDueToday ? 'text-amber-500' : 'text-green-500'} />
+                                    <span className={`font-medium ${isOverdue ? 'text-red-500' : isDueToday ? 'text-amber-500' : 'text-green-500'}`}>
+                                        {daysLeft}
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     );
@@ -247,12 +266,12 @@ const HomeworkDiary: React.FC<HomeworkDiaryProps> = ({ classes, homework, addHom
                 )}
             </div>
 
-            {/* Homework Slide Preview Modal */}
+            {/* Homework Slide Preview Modal - Paper Style */}
             {selectedHomework && (
                 <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden">
                         <div className="p-4 flex justify-between items-center border-b bg-gray-50">
-                            <h3 className="font-bold text-gray-800">Homework Slide</h3>
+                            <h3 className="font-bold text-gray-800">Homework Preview</h3>
                             <div className="flex gap-2">
                                 <button onClick={downloadSlide} className="p-2 bg-indigo-100 text-indigo-600 rounded-xl hover:bg-indigo-200 transition-colors">
                                     <Download size={20} />
@@ -266,50 +285,60 @@ const HomeworkDiary: React.FC<HomeworkDiaryProps> = ({ classes, homework, addHom
                             </div>
                         </div>
 
-                        {/* Slide Design */}
-                        <div ref={slideRef} className="p-8 bg-gradient-to-br from-emerald-600 to-teal-700 text-white relative">
-                            {/* School Logo */}
-                            <div className="absolute top-4 right-4 w-14 h-14 bg-white rounded-full p-2 shadow-lg">
-                                <img src="/school-logo.png" alt="Logo" className="w-full h-full object-contain" />
-                            </div>
+                        {/* Paper Slide Design */}
+                        <div 
+                            ref={slideRef} 
+                            className="p-8 relative"
+                            style={{ 
+                                backgroundColor: '#fff',
+                                backgroundImage: 'linear-gradient(#e5e7eb 1px, transparent 1px)',
+                                backgroundSize: '100% 25px'
+                            }}
+                        >
+                             {/* Tape strips */}
+                             <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-32 h-8 bg-indigo-100/80 rotate-1 shadow-sm"></div>
 
-                            <div className="text-center mb-4">
-                                <p className="text-sm opacity-80 font-medium tracking-wider">ROOTS OF WISDOM SCHOOL & COLLEGE</p>
-                                <div className="mt-3 inline-flex items-center gap-2 bg-white/20 backdrop-blur px-4 py-2 rounded-full">
-                                    <BookOpen size={18} />
-                                    <span className="font-bold uppercase text-sm">Homework</span>
-                                </div>
-                                <h2 className="text-xl font-bold mt-3">{getClassName(selectedHomework.classId)}</h2>
-                            </div>
-
-                            <div className="bg-white text-gray-800 rounded-2xl p-5 mb-4 shadow-xl">
-                                <div className="flex items-center gap-2 mb-3 pb-3 border-b">
-                                    <BookOpen size={20} className="text-indigo-600" />
-                                    <span className="font-bold text-indigo-600 text-lg">{selectedHomework.subject}</span>
-                                </div>
-                                <p className="text-gray-700 leading-relaxed">{selectedHomework.description}</p>
-                            </div>
-
-                            <div className="flex justify-between items-center text-sm">
-                                <div className="flex items-center gap-2 opacity-80">
-                                    <Calendar size={16} />
-                                    <span>Assigned: {new Date(selectedHomework.assignedDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
-                                </div>
-                                <div className="bg-white/20 backdrop-blur px-4 py-2 rounded-full flex items-center gap-2">
-                                    <Clock size={16} />
-                                    <span className="font-bold">Due: {new Date(selectedHomework.dueDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
-                                </div>
-                            </div>
-
-                            {/* Footer with Signature */}
-                            <div className="mt-8 pt-4 border-t border-white/30 flex justify-between items-end">
-                                <div className="text-xs opacity-60">Powered by Ustaz.AI</div>
+                            {/* School Header */}
+                            <div className="flex items-center justify-center gap-3 mb-8 mt-4 pt-4">
+                                <img src="/school-logo.png" alt="Logo" className="w-14 h-14 object-contain" />
                                 <div className="text-center">
-                                    <div className="flex justify-center mb-1">
-                                        <CheckCircle size={24} />
-                                    </div>
-                                    <span className="text-xs opacity-80">Teacher's Sign</span>
+                                    <p className="text-xs text-gray-500 font-medium tracking-wider">ROOTS OF WISDOM</p>
+                                    <p className="text-sm font-bold text-gray-700">School & College</p>
                                 </div>
+                            </div>
+
+                            <div className="text-center mb-6">
+                                <div className="inline-block border-2 border-indigo-600 text-indigo-600 font-bold px-4 py-1 rounded uppercase tracking-wider text-sm mb-2">
+                                    Homework Diary
+                                </div>
+                                <h2 className="text-xl font-bold bg-gray-100 inline-block px-3 py-1 rounded">
+                                    Class: {getClassName(selectedHomework.classId)}
+                                </h2>
+                            </div>
+
+                            <div className="mb-6 p-4 border border-dashed border-gray-300 rounded-lg bg-white/50">
+                                <div className="flex items-center gap-2 mb-3">
+                                    <span className="font-bold text-xl text-indigo-700 font-serif border-b-2 border-indigo-200">
+                                        {selectedHomework.subject}
+                                    </span>
+                                </div>
+                                <p className="text-lg text-gray-800 leading-relaxed font-serif" style={{ lineHeight: '25px' }}>
+                                    {selectedHomework.description}
+                                </p>
+                            </div>
+
+                            <div className="flex justify-between items-center text-sm mt-8 border-t border-gray-200 pt-4">
+                                <div className="text-gray-500">
+                                    Due: <span className="font-bold text-red-500">{new Date(selectedHomework.dueDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
+                                </div>
+                                <div className="text-center">
+                                    <div className="w-24 border-b border-gray-400 mb-1"></div>
+                                    <span className="text-xs text-gray-400">Teacher's Sign</span>
+                                </div>
+                            </div>
+                            
+                            <div className="text-center mt-6">
+                                <p className="text-[10px] text-gray-400">Powered by Ustaz.AI</p>
                             </div>
                         </div>
                     </div>

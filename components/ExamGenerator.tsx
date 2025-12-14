@@ -354,9 +354,9 @@ const ExamGenerator: React.FC<ExamGeneratorProps> = ({ classes }) => {
               {/* Header with Logo */}
               <div className="flex items-start justify-between border-b-4 border-emerald-600 pb-4 mb-6">
                 <div className="flex items-center gap-4">
-                  {/* School Logo in Circle */}
-                  <div className="w-20 h-20 rounded-full border-4 border-emerald-600 overflow-hidden bg-white shadow-lg flex items-center justify-center">
-                    <img src="/school-logo.png" alt="Logo" className="w-16 h-16 object-contain" />
+                  {/* School Logo */}
+                  <div className="w-20 h-20 flex items-center justify-center">
+                    <img src="/school-logo.png" alt="Logo" className="w-full h-full object-contain filter drop-shadow-md" />
                   </div>
                   <div>
                     <h3 className="text-lg font-bold text-emerald-700 tracking-widest">ROOTS OF WISDOM SCHOOL & COLLEGE</h3>

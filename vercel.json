@@ -1,0 +1,35 @@
+{
+    "headers": [
+        {
+            "source": "/manifest.json",
+            "headers": [
+                {
+                    "key": "Access-Control-Allow-Origin",
+                    "value": "*"
+                },
+                {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                }
+            ]
+        },
+        {
+            "source": "/icon.png",
+            "headers": [
+                {
+                    "key": "Access-Control-Allow-Origin",
+                    "value": "*"
+                }
+            ]
+        },
+        {
+            "source": "/sw.js",
+            "headers": [
+                {
+                    "key": "Access-Control-Allow-Origin",
+                    "value": "*"
+                }
+            ]
+        }
+    ]
+}

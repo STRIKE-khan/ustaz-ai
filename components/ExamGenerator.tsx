@@ -1,6 +1,9 @@
 import React, { useState, useRef } from 'react';
 import { ClassGroup } from '../types';
-import { Download, Plus, Trash2, Share2, Award, BookOpen, CheckCircle } from 'lucide-react';
+import { Download, Plus, Trash2, Share2, Award, BookOpen, CheckCircle, FileSpreadsheet, FileText, AlertCircle } from 'lucide-react';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 
 declare const html2canvas: any;
 
@@ -87,8 +90,10 @@ const ExamGenerator: React.FC<ExamGeneratorProps> = ({ classes }) => {
   const [examName, setExamName] = useState('');
   const [subjects, setSubjects] = useState<{ name: string; total: number }[]>([{ name: '', total: 100 }]);
   const [marksData, setMarksData] = useState<{ [studentId: string]: { [subject: string]: number } }>({});
+  const [examRollNos, setExamRollNos] = useState<{ [studentId: string]: string }>({});
   const [showSubjectSuggestions, setShowSubjectSuggestions] = useState(false);
   const [showPortionModal, setShowPortionModal] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const slideRef = useRef<HTMLDivElement>(null);
   const selectedClass = classes.find(c => c.id === selectedClassId);
@@ -99,6 +104,10 @@ const ExamGenerator: React.FC<ExamGeneratorProps> = ({ classes }) => {
     if (cls) {
       const defaultSubjects = getPTBSubjects(cls.name);
       setSubjects(defaultSubjects);
+      // Initialize roll numbers from student list
+      const initialRolls: any = {};
+      cls.students.forEach(s => { initialRolls[s.id] = s.rollNo; });
+      setExamRollNos(initialRolls);
     }
   };
 
@@ -119,16 +128,29 @@ const ExamGenerator: React.FC<ExamGeneratorProps> = ({ classes }) => {
 
   const handleMarkChange = (studentId: string, subjectIdx: number, value: string) => {
     const inputVal = parseFloat(value) || 0;
-    // Validate: marks cannot exceed subject's total marks
     const maxMarks = subjects[subjectIdx].total;
-    const val = Math.min(Math.max(0, inputVal), maxMarks);
+
+    // Strict Validation
+    if (inputVal > maxMarks) {
+      setErrorMsg(`Marks cannot exceed ${maxMarks} for ${subjects[subjectIdx].name}!`);
+      setTimeout(() => setErrorMsg(null), 3000);
+      return; // Do not update state if invalid
+    }
+
+    // Clear error if valid
+    setErrorMsg(null);
+
     setMarksData(prev => ({
       ...prev,
       [studentId]: {
         ...(prev[studentId] || {}),
-        [subjects[subjectIdx].name]: val
+        [subjects[subjectIdx].name]: inputVal
       }
     }));
+  };
+
+  const handleRollNoChange = (studentId: string, val: string) => {
+    setExamRollNos(prev => ({ ...prev, [studentId]: val }));
   };
 
   const calculateTotal = (studentId: string): number => {
@@ -165,10 +187,89 @@ const ExamGenerator: React.FC<ExamGeneratorProps> = ({ classes }) => {
     }
   };
 
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+
+    // Header
+    doc.setFontSize(18);
+    doc.text("ROOTS OF WISDOM SCHOOL & COLLEGE", 105, 15, { align: "center" });
+    doc.setFontSize(14);
+    doc.text(`Award List: ${examName}`, 105, 22, { align: "center" });
+    doc.setFontSize(10);
+    doc.text(`Class: ${selectedClass?.name} | Date: ${new Date().toLocaleDateString()}`, 105, 28, { align: "center" });
+
+    // Table Data
+    const tableHead = [['Roll No', 'Name', ...subjects.map(s => `${s.name} (${s.total})`), 'Obtained', 'Total', '%', 'Pos']];
+
+    const sortedStudents = selectedClass?.students
+      .map(s => {
+        const ob = calculateTotal(s.id);
+        const perc = grandTotal > 0 ? (ob / grandTotal) * 100 : 0;
+        return { ...s, ob, perc, roll: examRollNos[s.id] || s.rollNo };
+      })
+      .sort((a, b) => b.ob - a.ob);
+
+    const tableBody = sortedStudents?.map((s, idx) => [
+      s.roll,
+      s.name,
+      ...subjects.map(sub => marksData[s.id]?.[sub.name] || '-'),
+      s.ob,
+      grandTotal,
+      s.perc.toFixed(1) + '%',
+      idx === 0 ? '1st' : idx === 1 ? '2nd' : idx === 2 ? '3rd' : ''
+    ]);
+
+    autoTable(doc, {
+      head: tableHead,
+      body: tableBody,
+      startY: 35,
+      theme: 'grid',
+      headStyles: { fillColor: [16, 185, 129] }, // Emerald color
+    });
+
+    doc.save(`AwardList_${examName}.pdf`);
+  };
+
+  const exportToExcel = () => {
+    if (!selectedClass) return;
+
+    const data = selectedClass.students.map(s => {
+      const ob = calculateTotal(s.id);
+      const perc = grandTotal > 0 ? (ob / grandTotal) * 100 : 0;
+
+      const row: any = {
+        'Roll No': examRollNos[s.id] || s.rollNo,
+        'Name': s.name,
+      };
+
+      subjects.forEach(sub => {
+        row[`${sub.name} (${sub.total})`] = marksData[s.id]?.[sub.name] || 0;
+      });
+
+      row['Obtained Total'] = ob;
+      row['Grand Total'] = grandTotal;
+      row['Percentage'] = perc.toFixed(2) + '%';
+
+      return row;
+    });
+
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Award List");
+    XLSX.writeFile(wb, `AwardList_${examName}.xlsx`);
+  };
+
   const ptbSubjects = selectedClass ? getPTBSubjects(selectedClass.name) : [];
 
   return (
-    <div className="max-w-6xl mx-auto animate-fadeIn">
+    <div className="max-w-6xl mx-auto animate-fadeIn relative">
+      {/* Error Toast */}
+      {errorMsg && (
+        <div className="fixed top-20 right-5 bg-red-500 text-white px-6 py-3 rounded-xl shadow-2xl z-50 animate-bounce flex items-center gap-2 font-bold">
+          <AlertCircle color="white" /> {errorMsg}
+        </div>
+      )}
+
       <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
         <Award className="text-indigo-600" /> Award List Generator
       </h2>
@@ -314,6 +415,7 @@ const ExamGenerator: React.FC<ExamGeneratorProps> = ({ classes }) => {
           <table className="w-full min-w-[800px] border text-sm">
             <thead>
               <tr className="bg-indigo-50">
+                <th className="p-3 border text-left font-bold text-gray-700 w-24">Roll No</th>
                 <th className="p-3 border text-left font-bold text-gray-700">Student Name</th>
                 {subjects.map((sub, i) => (
                   <th key={i} className="p-3 border text-center font-bold text-gray-700">
@@ -325,11 +427,20 @@ const ExamGenerator: React.FC<ExamGeneratorProps> = ({ classes }) => {
             <tbody>
               {selectedClass.students.map(student => (
                 <tr key={student.id} className="border-b hover:bg-gray-50">
+                  <td className="p-2 border">
+                    <input
+                      className="w-full p-2 border border-gray-200 rounded text-center focus:border-indigo-500 outline-none text-gray-900 bg-white"
+                      value={examRollNos[student.id] || ''}
+                      onChange={(e) => handleRollNoChange(student.id, e.target.value)}
+                      placeholder={student.rollNo}
+                    />
+                  </td>
                   <td className="p-3 border font-medium text-gray-800">{student.name}</td>
                   {subjects.map((sub, idx) => (
-                    <td key={idx} className="p-2 border text-center">
+                    <td key={idx} className="p-2 border text-center relative">
                       <input
-                        className="w-full text-center p-2 border-2 border-gray-200 rounded-lg focus:border-indigo-500 outline-none text-gray-900 bg-white"
+                        className={`w-full text-center p-2 border-2 rounded-lg outline-none text-gray-900 bg-white transition-colors
+                            ${marksData[student.id]?.[sub.name] > sub.total ? 'border-red-500 bg-red-50 animate-pulse' : 'border-gray-200 focus:border-indigo-500'}`}
                         type="number"
                         onChange={(e) => handleMarkChange(student.id, idx, e.target.value)}
                         placeholder="-"
@@ -345,6 +456,23 @@ const ExamGenerator: React.FC<ExamGeneratorProps> = ({ classes }) => {
 
       {step === 3 && selectedClass && (
         <div className="flex flex-col gap-6 items-center">
+
+          {/* Action Buttons */}
+          <div className="flex flex-wrap gap-4 justify-center w-full">
+            <button onClick={downloadAwardList} className="bg-gray-800 text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-2 font-bold hover:scale-105 transition-all">
+              <Download size={20} /> Image
+            </button>
+            <button onClick={exportToPDF} className="bg-red-600 text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-2 font-bold hover:scale-105 transition-all">
+              <FileText size={20} /> Export PDF
+            </button>
+            <button onClick={exportToExcel} className="bg-green-600 text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-2 font-bold hover:scale-105 transition-all">
+              <FileSpreadsheet size={20} /> Export Excel
+            </button>
+            <button onClick={shareAwardList} className="bg-indigo-600 text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-2 font-bold hover:scale-105 transition-all">
+              <Share2 size={20} /> WhatsApp
+            </button>
+          </div>
+
           <div className="bg-gray-200 p-4 rounded-xl shadow-inner overflow-auto max-w-full">
             <div
               ref={slideRef}
@@ -390,12 +518,12 @@ const ExamGenerator: React.FC<ExamGeneratorProps> = ({ classes }) => {
                     .map(s => {
                       const ob = calculateTotal(s.id);
                       const perc = grandTotal > 0 ? (ob / grandTotal) * 100 : 0;
-                      return { ...s, ob, perc };
+                      return { ...s, ob, perc, roll: examRollNos[s.id] || s.rollNo };
                     })
                     .sort((a, b) => b.ob - a.ob)
                     .map((s, idx) => (
                       <tr key={s.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-emerald-50/50'}>
-                        <td className="border border-gray-300 p-2 text-center font-mono">{s.rollNo}</td>
+                        <td className="border border-gray-300 p-2 text-center font-mono">{s.roll}</td>
                         <td className="border border-gray-300 p-2 font-semibold text-gray-800">{s.name}</td>
                         {subjects.map((sub, i) => (
                           <td key={i} className="border border-gray-300 p-2 text-center text-gray-700">
@@ -432,15 +560,6 @@ const ExamGenerator: React.FC<ExamGeneratorProps> = ({ classes }) => {
                 </div>
               </div>
             </div>
-          </div>
-
-          <div className="flex gap-4">
-            <button onClick={downloadAwardList} className="bg-gray-800 text-white px-8 py-4 rounded-xl shadow-xl flex items-center gap-2 font-bold hover:bg-gray-900 transition-all">
-              <Download size={20} /> Save to Gallery
-            </button>
-            <button onClick={shareAwardList} className="bg-green-600 text-white px-8 py-4 rounded-xl shadow-xl flex items-center gap-2 font-bold hover:bg-green-700 transition-all">
-              <Share2 size={20} /> Share via WhatsApp
-            </button>
           </div>
         </div>
       )}

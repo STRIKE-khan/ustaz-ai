@@ -1,8 +1,7 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { ClassGroup, Homework } from '../types';
-import { BookOpen, Plus, Trash2, Download, Share2, Calendar, Clock, CheckCircle } from 'lucide-react';
-
-declare const html2canvas: any;
+import { BookOpen, Plus, Trash2, Download, Share2, Clock, CheckCircle, X } from 'lucide-react';
+import html2canvas from 'html2canvas';
 
 interface HomeworkDiaryProps {
     classes: ClassGroup[];
@@ -14,58 +13,96 @@ interface HomeworkDiaryProps {
 // Subject suggestions based on class level
 const getSubjectSuggestions = (className: string): string[] => {
     const name = className.toLowerCase();
-
     if (name.includes('9') || name.includes('10') || name.includes('matric')) {
-        return ['Physics', 'Chemistry', 'Biology', 'Mathematics', 'English', 'Urdu', 'Islamiat', 'Pakistan Studies', 'Computer Science'];
-    } else if (name.includes('11') || name.includes('12') || name.includes('inter') || name.includes('fsc')) {
-        return ['Physics', 'Chemistry', 'Biology', 'Mathematics', 'English', 'Urdu', 'Computer Science'];
+        return ['Physics', 'Chemistry', 'Biology', 'Mathematics', 'English', 'Urdu', 'Islamiat', 'Pak Studies', 'Computer'];
+    } else if (name.includes('11') || name.includes('12') || name.includes('inter')) {
+        return ['Physics', 'Chemistry', 'Biology', 'Math', 'English', 'Urdu', 'Computer'];
     } else if (name.includes('6') || name.includes('7') || name.includes('8')) {
-        return ['English', 'Urdu', 'Mathematics', 'Science', 'Social Studies', 'Islamiat', 'Arabic'];
+        return ['English', 'Urdu', 'Math', 'Science', 'S.Studies', 'Islamiat', 'Arabic', 'Computer'];
     } else {
-        return ['Urdu', 'English', 'Mathematics', 'Nazra/Quran', 'Drawing', 'General Science', 'Islamiat'];
+        return ['Urdu', 'English', 'Math', 'Nazra', 'G.Science', 'Islamiat', 'Drawing'];
     }
 };
 
 const HomeworkDiary: React.FC<HomeworkDiaryProps> = ({ classes, homework, addHomework, deleteHomework }) => {
     const [showForm, setShowForm] = useState(false);
     const [classId, setClassId] = useState('');
-    const [subject, setSubject] = useState('');
-    const [showSubjectSuggestions, setShowSubjectSuggestions] = useState(false);
-    const [description, setDescription] = useState('');
-    const [dueDate, setDueDate] = useState('');
-    const [selectedHomework, setSelectedHomework] = useState<Homework | null>(null);
+    const [dueDate, setDueDate] = useState(new Date().toISOString().split('T')[0]);
+    // Multi-subject state
+    const [diaryEntries, setDiaryEntries] = useState<{ id: string; subject: string; description: string }[]>([
+        { id: '1', subject: '', description: '' }
+    ]);
+
+    const [selectedDiaryGroup, setSelectedDiaryGroup] = useState<{ classId: string, date: string, items: Homework[] } | null>(null);
     const slideRef = useRef<HTMLDivElement>(null);
 
-    const today = new Date().toISOString().split('T')[0];
     const selectedClass = classes.find(c => c.id === classId);
     const subjectSuggestions = selectedClass ? getSubjectSuggestions(selectedClass.name) : [];
 
+    // Group homework by Class + Due Date
+    const groupedHomework = useMemo(() => {
+        const groups: { [key: string]: { classId: string, date: string, items: Homework[] } } = {};
+        homework.forEach(hw => {
+            const key = `${hw.classId}-${hw.dueDate}`;
+            if (!groups[key]) {
+                groups[key] = { classId: hw.classId, date: hw.dueDate, items: [] };
+            }
+            groups[key].items.push(hw);
+        });
+        return Object.values(groups).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    }, [homework]);
+
+    const handleAddRow = () => {
+        setDiaryEntries([...diaryEntries, { id: Date.now().toString(), subject: '', description: '' }]);
+    };
+
+    const handleRemoveRow = (id: string) => {
+        if (diaryEntries.length > 1) {
+            setDiaryEntries(diaryEntries.filter(e => e.id !== id));
+        }
+    };
+
+    const handleEntryChange = (id: string, field: 'subject' | 'description', value: string) => {
+        setDiaryEntries(diaryEntries.map(e => e.id === id ? { ...e, [field]: value } : e));
+    };
+
     const handleSubmit = () => {
-        if (!classId || !subject.trim() || !description.trim() || !dueDate) return;
+        if (!classId || !dueDate) return;
 
-        const newHomework: Homework = {
-            id: Date.now().toString(),
-            classId,
-            subject: subject.trim(),
-            description: description.trim(),
-            assignedDate: today,
-            dueDate,
-            createdAt: new Date().toISOString(),
-        };
+        const validEntries = diaryEntries.filter(e => e.subject.trim() && e.description.trim());
+        if (validEntries.length === 0) return;
 
-        addHomework(newHomework);
+        validEntries.forEach(entry => {
+            const newHomework: Homework = {
+                id: Date.now().toString() + Math.random(),
+                classId,
+                subject: entry.subject.trim(),
+                description: entry.description.trim(),
+                assignedDate: new Date().toISOString().split('T')[0],
+                dueDate,
+                createdAt: new Date().toISOString(),
+            };
+            addHomework(newHomework);
+        });
+
+        // Reset
         setClassId('');
-        setSubject('');
-        setDescription('');
-        setDueDate('');
+        setDiaryEntries([{ id: Date.now().toString(), subject: '', description: '' }]);
         setShowForm(false);
+    };
+
+    const handleDeleteGroup = (group: { classId: string, items: Homework[] }) => {
+        if (confirm('Delete this entire diary entry?')) {
+            group.items.forEach(item => deleteHomework(item.id));
+            if (selectedDiaryGroup?.items[0].id === group.items[0].id) setSelectedDiaryGroup(null);
+        }
     };
 
     const downloadSlide = async () => {
         if (!slideRef.current) return;
         const canvas = await html2canvas(slideRef.current, { scale: 2, backgroundColor: null });
         const link = document.createElement('a');
-        link.download = `homework-${selectedHomework?.subject || 'slide'}.png`;
+        link.download = `Diary_${getClassName(selectedDiaryGroup?.classId || '')}_${selectedDiaryGroup?.date}.png`;
         link.href = canvas.toDataURL('image/png');
         link.click();
     };
@@ -74,11 +111,11 @@ const HomeworkDiary: React.FC<HomeworkDiaryProps> = ({ classes, homework, addHom
         if (!slideRef.current) return;
         try {
             const canvas = await html2canvas(slideRef.current, { scale: 2, backgroundColor: null });
-            canvas.toBlob(async (blob: Blob | null) => {
+            canvas.toBlob(async (blob: any) => {
                 if (!blob) return;
-                const file = new File([blob], 'homework.png', { type: 'image/png' });
-                if (navigator.share) {
-                    await navigator.share({ files: [file], title: 'Homework' });
+                const file = new File([blob], 'diary.png', { type: 'image/png' });
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({ files: [file], title: 'Homework Diary' });
                 }
             });
         } catch (error) {
@@ -93,12 +130,12 @@ const HomeworkDiary: React.FC<HomeworkDiaryProps> = ({ classes, homework, addHom
         const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
         if (days < 0) return 'Overdue';
         if (days === 0) return 'Due Today';
-        if (days === 1) return '1 day left';
-        return `${days} days left`;
+        if (days === 1) return 'Tomorrow';
+        return `in ${days} days`;
     };
 
     return (
-        <div className="max-w-5xl mx-auto animate-fadeIn">
+        <div className="max-w-5xl mx-auto animate-fadeIn pb-20">
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
                     <BookOpen className="text-indigo-600" /> Homework Diary
@@ -107,240 +144,208 @@ const HomeworkDiary: React.FC<HomeworkDiaryProps> = ({ classes, homework, addHom
                     onClick={() => setShowForm(!showForm)}
                     className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-5 py-3 rounded-xl flex items-center gap-2 hover:shadow-lg transition-all font-bold"
                 >
-                    <Plus size={20} /> Assign Homework
+                    <Plus size={20} /> Assign Diary
                 </button>
             </div>
 
-            {/* Add Homework Form */}
+            {/* Creation Form */}
             {showForm && (
-                <div className="bg-indigo-50 p-6 rounded-2xl shadow-lg mb-6 border border-indigo-100 animate-fadeIn">
-                    <h3 className="font-bold text-lg mb-4 text-indigo-900">📝 Assign New Homework</h3>
+                <div className="bg-white p-6 rounded-2xl shadow-xl mb-8 border border-indigo-100 animate-slideUp">
+                    <div className="flex justify-between items-center mb-4">
+                        <h3 className="font-bold text-lg text-indigo-900">📝 New Diary Entry</h3>
+                        <button onClick={() => setShowForm(false)} className="text-gray-400 hover:text-gray-600"><X /></button>
+                    </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">Class</label>
                             <select
                                 value={classId}
-                                onChange={(e) => { setClassId(e.target.value); setSubject(''); }}
-                                className="w-full p-4 border-2 border-indigo-200 rounded-xl focus:border-indigo-500 outline-none transition-colors text-gray-900 bg-white"
+                                onChange={(e) => setClassId(e.target.value)}
+                                className="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 outline-none"
                             >
                                 <option value="">Select Class...</option>
-                                {classes.map((c) => (
-                                    <option key={c.id} value={c.id}>{c.name}</option>
-                                ))}
+                                {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                             </select>
                         </div>
-
-                        <div className="relative">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Subject</label>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Due Date</label>
                             <input
-                                type="text"
-                                value={subject}
-                                onChange={(e) => setSubject(e.target.value)}
-                                onFocus={() => setShowSubjectSuggestions(true)}
-                                onBlur={() => setTimeout(() => setShowSubjectSuggestions(false), 200)}
-                                placeholder="Type or select subject..."
-                                className="w-full p-4 border-2 border-indigo-200 rounded-xl focus:border-indigo-500 outline-none transition-colors text-gray-900 bg-white"
+                                type="date"
+                                value={dueDate}
+                                onChange={(e) => setDueDate(e.target.value)}
+                                className="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 outline-none"
                             />
-                            {showSubjectSuggestions && subjectSuggestions.length > 0 && (
-                                <div className="absolute top-full left-0 right-0 mt-1 bg-white border-2 border-gray-200 rounded-xl shadow-lg z-10 max-h-48 overflow-y-auto">
-                                    {subjectSuggestions.map((s, i) => (
-                                        <button
-                                            key={i}
-                                            className="w-full text-left px-4 py-3 hover:bg-indigo-50 text-gray-800 transition-colors first:rounded-t-xl last:rounded-b-xl"
-                                            onMouseDown={() => setSubject(s)}
-                                        >
-                                            {s}
-                                        </button>
-                                    ))}
-                                    <button
-                                        className="w-full text-left px-4 py-3 hover:bg-gray-100 text-indigo-600 font-medium border-t"
-                                        onMouseDown={() => setShowSubjectSuggestions(false)}
-                                    >
-                                        + Custom Subject
-                                    </button>
-                                </div>
-                            )}
                         </div>
                     </div>
 
-                    <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Homework Details</label>
-                        <textarea
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            placeholder="Describe the homework assignment..."
-                            rows={3}
-                            className="w-full p-4 border-2 border-indigo-200 rounded-xl focus:border-indigo-500 outline-none transition-colors text-gray-900 bg-white"
-                        />
+                    <div className="space-y-3 mb-6">
+                        <label className="block text-sm font-medium text-gray-700">Subjects & Tasks</label>
+                        {diaryEntries.map((entry, index) => (
+                            <div key={entry.id} className="flex gap-2 items-start animate-fadeIn">
+                                <div className="w-1/3 relative">
+                                    <input
+                                        placeholder="Subject"
+                                        value={entry.subject}
+                                        onChange={(e) => handleEntryChange(entry.id, 'subject', e.target.value)}
+                                        className="w-full p-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 outline-none"
+                                        list={`suggestions-${index}`}
+                                    />
+                                    <datalist id={`suggestions-${index}`}>
+                                        {subjectSuggestions.map(s => <option key={s} value={s} />)}
+                                    </datalist>
+                                </div>
+                                <input
+                                    placeholder="Task description..."
+                                    value={entry.description}
+                                    onChange={(e) => handleEntryChange(entry.id, 'description', e.target.value)}
+                                    className="flex-1 p-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 outline-none"
+                                />
+                                {diaryEntries.length > 1 && (
+                                    <button onClick={() => handleRemoveRow(entry.id)} className="p-3 text-red-400 hover:bg-red-50 rounded-lg">
+                                        <Trash2 size={18} />
+                                    </button>
+                                )}
+                            </div>
+                        ))}
+                        <button onClick={handleAddRow} className="text-indigo-600 font-medium text-sm flex items-center gap-1 hover:bg-indigo-50 px-3 py-2 rounded-lg transition-colors">
+                            <Plus size={16} /> Add Subject
+                        </button>
                     </div>
 
-                    <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Due Date</label>
-                        <input
-                            type="date"
-                            value={dueDate}
-                            onChange={(e) => setDueDate(e.target.value)}
-                            min={today}
-                            className="w-full p-4 border-2 border-indigo-200 rounded-xl focus:border-indigo-500 outline-none transition-colors text-gray-900 bg-white"
-                        />
-                    </div>
-
-                    <div className="flex gap-3">
-                        <button
-                            onClick={handleSubmit}
-                            className="bg-indigo-600 text-white px-8 py-3 rounded-xl hover:shadow-lg transition-all font-bold"
-                        >
-                            Save Homework
-                        </button>
-                        <button
-                            onClick={() => setShowForm(false)}
-                            className="bg-gray-200 text-gray-700 px-6 py-3 rounded-xl hover:bg-gray-300 transition-all font-medium"
-                        >
-                            Cancel
-                        </button>
+                    <div className="flex justify-end gap-3 pt-4 border-t">
+                        <button onClick={() => setShowForm(false)} className="px-6 py-2 text-gray-600 font-medium hover:bg-gray-100 rounded-lg">Cancel</button>
+                        <button onClick={handleSubmit} className="px-8 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 shadow-lg">Save Diary</button>
                     </div>
                 </div>
             )}
 
-            {/* Homework List - Paper Style */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-                {homework.map((hw, idx) => {
-                    const daysLeft = getDaysRemaining(hw.dueDate);
-                    const isOverdue = daysLeft === 'Overdue';
-                    const isDueToday = daysLeft === 'Due Today';
-                    const rotation = idx % 2 === 0 ? 'rotate-1' : '-rotate-1';
+            {/* Diary List (Grouped) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {groupedHomework.map((group, idx) => {
+                    const status = getDaysRemaining(group.date);
+                    const isDueToday = status === 'Due Today';
 
                     return (
                         <div
-                            key={hw.id}
-                            onClick={() => setSelectedHomework(hw)}
-                            className={`relative cursor-pointer hover:scale-105 transition-all ${rotation}`}
-                            style={{ transform: `rotate(${idx % 3 - 1}deg)` }}
+                            key={`${group.classId}-${group.date}`}
+                            onClick={() => setSelectedDiaryGroup(group)}
+                            className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-xl hover:scale-105 transition-all group relative overflow-hidden"
                         >
-                            {/* Tape on top */}
-                            <div
-                                className="absolute -top-3 left-1/2 transform -translate-x-1/2 w-16 h-6 rounded-sm shadow-sm z-10"
-                                style={{ backgroundColor: '#e0f2f1', opacity: 0.9 }}
-                            ></div>
+                            <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500"></div>
 
-                            <div
-                                className="p-5 pt-6 rounded-sm shadow-lg border border-gray-200 min-h-[180px] relative bg-white"
-                                style={{
-                                    backgroundImage: 'repeating-linear-gradient(white 0px, white 24px, #f0f4f8 25px)',
-                                    boxShadow: '4px 4px 10px rgba(0,0,0,0.1)'
-                                }}
-                            >
-                                <button
-                                    onClick={(e) => { e.stopPropagation(); deleteHomework(hw.id); }}
-                                    className="absolute top-2 right-2 text-gray-400 hover:text-red-500 p-1"
-                                >
-                                    <Trash2 size={14} />
-                                </button>
-
-                                <span className="inline-block px-2 py-1 bg-indigo-100 text-indigo-800 rounded text-xs font-bold mb-2">
-                                    {getClassName(hw.classId)}
-                                </span>
-
-                                <h4 className="font-bold text-gray-800 mb-2 text-lg font-serif">
-                                    {hw.subject}
-                                </h4>
-                                <p className="text-sm text-gray-600 mb-3 line-clamp-2" style={{ fontFamily: 'Georgia, serif' }}>
-                                    {hw.description}
-                                </p>
-                                <div className="flex items-center gap-2 text-sm mt-auto">
-                                    <Clock size={14} className={isOverdue ? 'text-red-500' : isDueToday ? 'text-amber-500' : 'text-green-500'} />
-                                    <span className={`font-medium ${isOverdue ? 'text-red-500' : isDueToday ? 'text-amber-500' : 'text-green-500'}`}>
-                                        {daysLeft}
-                                    </span>
+                            <div className="flex justify-between items-start mb-4">
+                                <div>
+                                    <h3 className="text-xl font-bold text-gray-800">{getClassName(group.classId)}</h3>
+                                    <p className={`text-sm font-medium ${isDueToday ? 'text-amber-600' : 'text-gray-500'}`}>
+                                        Due: {new Date(group.date).toLocaleDateString()} ({status})
+                                    </p>
+                                </div>
+                                <div className="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-xs font-bold">
+                                    {group.items.length} Tasks
                                 </div>
                             </div>
+
+                            <div className="space-y-2 mb-4">
+                                {group.items.slice(0, 3).map((item, i) => (
+                                    <div key={i} className="flex items-center gap-2 text-sm text-gray-600">
+                                        <div className="w-2 h-2 rounded-full bg-gray-300"></div>
+                                        <span className="font-semibold text-gray-800 w-20 truncate">{item.subject}:</span>
+                                        <span className="truncate flex-1">{item.description}</span>
+                                    </div>
+                                ))}
+                                {group.items.length > 3 && (
+                                    <p className="text-xs text-gray-400 pl-4">+ {group.items.length - 3} more...</p>
+                                )}
+                            </div>
+
+                            <button
+                                onClick={(e) => { e.stopPropagation(); handleDeleteGroup(group); }}
+                                className="absolute top-4 right-4 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                                <Trash2 size={18} />
+                            </button>
                         </div>
-                    );
+                    )
                 })}
-                {homework.length === 0 && (
-                    <div className="col-span-full text-center py-16 text-gray-400">
-                        <BookOpen size={48} className="mx-auto mb-4 opacity-50" />
-                        <p>No homework assigned. Click "Assign Homework" to create one.</p>
+
+                {groupedHomework.length === 0 && (
+                    <div className="col-span-full text-center py-20 text-gray-400">
+                        <BookOpen size={64} className="mx-auto mb-4 opacity-20" />
+                        <p className="text-xl font-medium text-gray-500">No diaries found.</p>
+                        <p className="text-sm">Create a new diary entry to get started.</p>
                     </div>
                 )}
             </div>
 
-            {/* Homework Slide Preview Modal - Paper Style */}
-            {selectedHomework && (
-                <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden">
-                        <div className="p-4 flex justify-between items-center border-b bg-gray-50">
-                            <h3 className="font-bold text-gray-800">Homework Preview</h3>
+            {/* Full Diary Preview Modal */}
+            {selectedDiaryGroup && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-white w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+                        {/* Toolbar */}
+                        <div className="p-4 border-b flex justify-between items-center bg-gray-50">
+                            <h3 className="font-bold text-gray-800">Diary Preview</h3>
                             <div className="flex gap-2">
-                                <button onClick={downloadSlide} className="p-2 bg-indigo-100 text-indigo-600 rounded-xl hover:bg-indigo-200 transition-colors">
-                                    <Download size={20} />
-                                </button>
-                                <button onClick={shareSlide} className="p-2 bg-green-100 text-green-600 rounded-xl hover:bg-green-200 transition-colors">
-                                    <Share2 size={20} />
-                                </button>
-                                <button onClick={() => setSelectedHomework(null)} className="p-2 bg-gray-100 text-gray-600 rounded-xl hover:bg-gray-200 transition-colors">
-                                    ✕
-                                </button>
+                                <button onClick={downloadSlide} className="p-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"><Download size={20} /></button>
+                                <button onClick={shareSlide} className="p-2 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition-colors"><Share2 size={20} /></button>
+                                <button onClick={() => setSelectedDiaryGroup(null)} className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors"><X size={20} /></button>
                             </div>
                         </div>
 
-                        {/* Paper Slide Design */}
-                        <div
-                            ref={slideRef}
-                            className="p-8 relative"
-                            style={{
-                                backgroundColor: '#fff',
-                                backgroundImage: 'linear-gradient(#e5e7eb 1px, transparent 1px)',
-                                backgroundSize: '100% 25px'
-                            }}
-                        >
-                            {/* Tape strips */}
-                            <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-32 h-8 bg-indigo-100/80 rotate-1 shadow-sm"></div>
+                        {/* Scrolling area */}
+                        <div className="overflow-y-auto flex-1 bg-gray-200 p-4 flex justify-center">
+                            {/* Paper Slide */}
+                            <div
+                                ref={slideRef}
+                                className="bg-white w-full max-w-md min-h-[600px] p-8 relative shadow-xl"
+                                style={{
+                                    backgroundImage: 'repeating-linear-gradient(#fff 0px, #fff 24px, #e5e7eb 25px)',
+                                    backgroundSize: '100% 25px'
+                                }}
+                            >
+                                {/* Tape */}
+                                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-8 bg-yellow-200/80 rotate-1 shadow-sm opacity-90"></div>
 
-                            {/* School Header */}
-                            <div className="flex items-center justify-center gap-3 mb-8 mt-4 pt-4">
-                                <div className="p-1 bg-white border-2 border-dashed border-indigo-200 shadow-sm rotate-2">
-                                    <img src="/school-logo.png" alt="Logo" className="w-14 h-14 object-contain" />
+                                {/* Header */}
+                                <div className="flex items-center justify-center gap-3 mb-6 mt-6">
+                                    <div className="p-1 bg-white border-dashed border-2 border-gray-300 shadow-sm rotate-[-2deg]">
+                                        <img src="/school-logo.png" className="w-12 h-12 object-contain" />
+                                    </div>
+                                    <div className="text-center">
+                                        <p className="text-xs tracking-widest text-gray-500 uppercase font-bold">Roots of Wisdom</p>
+                                        <h1 className="text-xl font-bold text-gray-800 font-serif">Homework Diary</h1>
+                                    </div>
                                 </div>
-                                <div className="text-center">
-                                    <p className="text-xs text-gray-500 font-medium tracking-wider">ROOTS OF WISDOM</p>
-                                    <p className="text-sm font-bold text-gray-700">School & College</p>
-                                </div>
-                            </div>
 
-                            <div className="text-center mb-6">
-                                <div className="inline-block border-2 border-indigo-600 text-indigo-600 font-bold px-4 py-1 rounded uppercase tracking-wider text-sm mb-2">
-                                    Homework Diary
+                                <div className="flex justify-between items-center border-b-2 border-gray-800 pb-2 mb-6 font-serif">
+                                    <div>
+                                        <span className="text-gray-500 text-xs uppercase tracking-wide">Class</span>
+                                        <p className="font-bold text-lg">{getClassName(selectedDiaryGroup.classId)}</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <span className="text-gray-500 text-xs uppercase tracking-wide">Due Date</span>
+                                        <p className="font-bold text-lg text-red-600">{new Date(selectedDiaryGroup.date).toLocaleDateString('en-GB')}</p>
+                                    </div>
                                 </div>
-                                <h2 className="text-xl font-bold bg-gray-100 inline-block px-3 py-1 rounded">
-                                    Class: {getClassName(selectedHomework.classId)}
-                                </h2>
-                            </div>
 
-                            <div className="mb-6 p-4 border border-dashed border-gray-300 rounded-lg bg-white/50">
-                                <div className="flex items-center gap-2 mb-3">
-                                    <span className="font-bold text-xl text-indigo-700 font-serif border-b-2 border-indigo-200">
-                                        {selectedHomework.subject}
-                                    </span>
+                                {/* Tasks List */}
+                                <div className="space-y-1">
+                                    {selectedDiaryGroup.items.map((item, i) => (
+                                        <div key={i} className="flex gap-4 py-2 items-baseline" style={{ lineHeight: '25px' }}>
+                                            <div className="w-24 font-bold text-indigo-800 text-sm font-serif text-right shrink-0">
+                                                {item.subject}
+                                            </div>
+                                            <div className="flex-1 text-gray-800 font-serif text-sm border-b border-gray-100 border-dashed pb-1">
+                                                {item.description}
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
-                                <p className="text-lg text-gray-800 leading-relaxed font-serif" style={{ lineHeight: '25px' }}>
-                                    {selectedHomework.description}
-                                </p>
-                            </div>
 
-                            <div className="flex justify-between items-center text-sm mt-8 border-t border-gray-200 pt-4">
-                                <div className="text-gray-500">
-                                    Due: <span className="font-bold text-red-500">{new Date(selectedHomework.dueDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
+                                {/* Footer */}
+                                <div className="absolute bottom-6 left-0 right-0 text-center">
+                                    <p className="font-handwriting text-gray-400 text-sm italic">"Review your lessons daily"</p>
                                 </div>
-                                <div className="text-center">
-                                    <div className="w-24 border-b border-gray-400 mb-1"></div>
-                                    <span className="text-xs text-gray-400">Teacher's Sign</span>
-                                </div>
-                            </div>
-
-                            <div className="text-center mt-6">
-
                             </div>
                         </div>
                     </div>

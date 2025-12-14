@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Notice, NoticeType } from '../types';
-import { Bell, Plus, Trash2, Download, Share2, Calendar, CheckCircle } from 'lucide-react';
+import { Bell, Plus, Trash2, Download, Share2, Calendar, Pin } from 'lucide-react';
 
 declare const html2canvas: any;
 
@@ -19,17 +19,15 @@ const NoticeBoard: React.FC<NoticeBoardProps> = ({ notices, addNotice, deleteNot
     const [selectedNotice, setSelectedNotice] = useState<Notice | null>(null);
     const slideRef = useRef<HTMLDivElement>(null);
 
-    // Professional notice types with elegant colors
-    const noticeTypes: { value: NoticeType; label: string; icon: string; color: string }[] = [
-        { value: 'holiday', label: 'Holiday', icon: '🏖️', color: 'emerald' },
-        { value: 'announcement', label: 'Announcement', icon: '📢', color: 'indigo' },
-        { value: 'important', label: 'Important', icon: '⚠️', color: 'amber' },
-        { value: 'event', label: 'Event', icon: '🎉', color: 'purple' },
+    const noticeTypes: { value: NoticeType; label: string; icon: string; paperColor: string; tapeColor: string }[] = [
+        { value: 'holiday', label: 'Holiday', icon: '🏖️', paperColor: '#e8f5e9', tapeColor: '#81c784' },
+        { value: 'announcement', label: 'Announcement', icon: '📢', paperColor: '#fff8e1', tapeColor: '#ffd54f' },
+        { value: 'important', label: 'Important', icon: '⚠️', paperColor: '#ffebee', tapeColor: '#e57373' },
+        { value: 'event', label: 'Event', icon: '🎉', paperColor: '#e8eaf6', tapeColor: '#7986cb' },
     ];
 
     const handleSubmit = () => {
         if (!title.trim()) return;
-
         const newNotice: Notice = {
             id: Date.now().toString(),
             title: title.trim(),
@@ -38,7 +36,6 @@ const NoticeBoard: React.FC<NoticeBoardProps> = ({ notices, addNotice, deleteNot
             date,
             createdAt: new Date().toISOString(),
         };
-
         addNotice(newNotice);
         setTitle('');
         setDescription('');
@@ -48,7 +45,7 @@ const NoticeBoard: React.FC<NoticeBoardProps> = ({ notices, addNotice, deleteNot
 
     const downloadSlide = async () => {
         if (!slideRef.current) return;
-        const canvas = await html2canvas(slideRef.current, { scale: 2 });
+        const canvas = await html2canvas(slideRef.current, { scale: 2, backgroundColor: null });
         const link = document.createElement('a');
         link.download = `notice-${selectedNotice?.title || 'slide'}.png`;
         link.href = canvas.toDataURL('image/png');
@@ -58,7 +55,7 @@ const NoticeBoard: React.FC<NoticeBoardProps> = ({ notices, addNotice, deleteNot
     const shareSlide = async () => {
         if (!slideRef.current) return;
         try {
-            const canvas = await html2canvas(slideRef.current, { scale: 2 });
+            const canvas = await html2canvas(slideRef.current, { scale: 2, backgroundColor: null });
             canvas.toBlob(async (blob: Blob | null) => {
                 if (!blob) return;
                 const file = new File([blob], 'notice.png', { type: 'image/png' });
@@ -71,25 +68,17 @@ const NoticeBoard: React.FC<NoticeBoardProps> = ({ notices, addNotice, deleteNot
         }
     };
 
-    const getTypeConfig = (t: NoticeType) => {
-        const configs = {
-            holiday: { bg: 'bg-emerald-600', gradient: 'from-emerald-600 to-teal-700', light: 'bg-emerald-100', text: 'text-emerald-700' },
-            announcement: { bg: 'bg-indigo-600', gradient: 'from-indigo-600 to-blue-700', light: 'bg-indigo-100', text: 'text-indigo-700' },
-            important: { bg: 'bg-amber-600', gradient: 'from-amber-600 to-orange-700', light: 'bg-amber-100', text: 'text-amber-700' },
-            event: { bg: 'bg-purple-600', gradient: 'from-purple-600 to-violet-700', light: 'bg-purple-100', text: 'text-purple-700' },
-        };
-        return configs[t];
-    };
+    const getTypeInfo = (t: NoticeType) => noticeTypes.find(nt => nt.value === t)!;
 
     return (
         <div className="max-w-5xl mx-auto animate-fadeIn">
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                    <Bell className="text-indigo-600" /> Notice Board
+                    <Bell className="text-amber-600" /> Notice Board
                 </h2>
                 <button
                     onClick={() => setShowForm(!showForm)}
-                    className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-5 py-3 rounded-xl flex items-center gap-2 hover:shadow-lg transition-all font-bold"
+                    className="bg-gradient-to-r from-amber-500 to-orange-500 text-white px-5 py-3 rounded-xl flex items-center gap-2 hover:shadow-lg transition-all font-bold"
                 >
                     <Plus size={20} /> Add Notice
                 </button>
@@ -97,180 +86,208 @@ const NoticeBoard: React.FC<NoticeBoardProps> = ({ notices, addNotice, deleteNot
 
             {/* Add Notice Form */}
             {showForm && (
-                <div className="bg-white p-6 rounded-2xl shadow-lg mb-6 border border-gray-100 animate-fadeIn">
-                    <h3 className="font-bold text-lg mb-4 text-gray-800">Create New Notice</h3>
+                <div className="bg-amber-50 p-6 rounded-2xl shadow-lg mb-6 border-2 border-dashed border-amber-300 animate-fadeIn">
+                    <h3 className="font-bold text-lg mb-4 text-amber-800">📝 Create New Notice</h3>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
+                            <label className="block text-sm font-medium text-amber-700 mb-2">Title</label>
                             <input
                                 type="text"
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
                                 placeholder="Notice title..."
-                                className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-indigo-500 outline-none transition-colors text-gray-900 bg-white"
+                                className="w-full p-4 border-2 border-amber-200 rounded-xl focus:border-amber-500 outline-none bg-white text-gray-900"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
+                            <label className="block text-sm font-medium text-amber-700 mb-2">Date</label>
                             <input
                                 type="date"
                                 value={date}
                                 onChange={(e) => setDate(e.target.value)}
-                                className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-indigo-500 outline-none transition-colors text-gray-900 bg-white"
+                                className="w-full p-4 border-2 border-amber-200 rounded-xl focus:border-amber-500 outline-none bg-white text-gray-900"
                             />
                         </div>
                     </div>
 
                     <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Notice Type</label>
+                        <label className="block text-sm font-medium text-amber-700 mb-2">Type</label>
                         <div className="flex flex-wrap gap-2">
-                            {noticeTypes.map((nt) => {
-                                const config = getTypeConfig(nt.value);
-                                return (
-                                    <button
-                                        key={nt.value}
-                                        onClick={() => setType(nt.value)}
-                                        className={`px-5 py-3 rounded-xl flex items-center gap-2 transition-all font-medium ${type === nt.value
-                                                ? `${config.bg} text-white shadow-lg`
-                                                : `${config.light} ${config.text} hover:shadow-md`
-                                            }`}
-                                    >
-                                        {nt.icon} {nt.label}
-                                    </button>
-                                );
-                            })}
+                            {noticeTypes.map((nt) => (
+                                <button
+                                    key={nt.value}
+                                    onClick={() => setType(nt.value)}
+                                    style={{ backgroundColor: type === nt.value ? nt.tapeColor : 'white' }}
+                                    className={`px-4 py-2 rounded-lg flex items-center gap-2 font-medium border-2 transition-all ${type === nt.value ? 'text-white shadow-md border-transparent' : 'border-gray-200 text-gray-700'
+                                        }`}
+                                >
+                                    {nt.icon} {nt.label}
+                                </button>
+                            ))}
                         </div>
                     </div>
 
                     <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                        <label className="block text-sm font-medium text-amber-700 mb-2">Description</label>
                         <textarea
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                             placeholder="Notice details..."
                             rows={3}
-                            className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-indigo-500 outline-none transition-colors text-gray-900 bg-white"
+                            className="w-full p-4 border-2 border-amber-200 rounded-xl focus:border-amber-500 outline-none bg-white text-gray-900"
                         />
                     </div>
 
                     <div className="flex gap-3">
-                        <button
-                            onClick={handleSubmit}
-                            className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-3 rounded-xl hover:shadow-lg transition-all font-bold"
-                        >
-                            Save Notice
+                        <button onClick={handleSubmit} className="bg-amber-600 text-white px-8 py-3 rounded-xl hover:bg-amber-700 font-bold">
+                            📌 Pin Notice
                         </button>
-                        <button
-                            onClick={() => setShowForm(false)}
-                            className="bg-gray-200 text-gray-700 px-6 py-3 rounded-xl hover:bg-gray-300 transition-all font-medium"
-                        >
+                        <button onClick={() => setShowForm(false)} className="bg-gray-200 text-gray-700 px-6 py-3 rounded-xl hover:bg-gray-300">
                             Cancel
                         </button>
                     </div>
                 </div>
             )}
 
-            {/* Notice List */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                {notices.map((notice) => {
-                    const config = getTypeConfig(notice.type);
-                    const typeInfo = noticeTypes.find(t => t.value === notice.type)!;
+            {/* Notice List - Paper Style Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                {notices.map((notice, idx) => {
+                    const typeInfo = getTypeInfo(notice.type);
+                    const rotation = idx % 2 === 0 ? 'rotate-1' : '-rotate-1';
                     return (
                         <div
                             key={notice.id}
                             onClick={() => setSelectedNotice(notice)}
-                            className={`p-5 rounded-2xl shadow-sm border-l-4 cursor-pointer hover:shadow-lg transition-all bg-white ${config.bg.replace('bg-', 'border-')
-                                }`}
+                            className={`relative cursor-pointer hover:scale-105 transition-all ${rotation}`}
+                            style={{ transform: `rotate(${idx % 3 - 1}deg)` }}
                         >
-                            <div className="flex justify-between items-start mb-3">
-                                <span className={`px-3 py-1 rounded-full text-sm font-bold ${config.light} ${config.text}`}>
-                                    {typeInfo.icon} {typeInfo.label}
-                                </span>
+                            {/* Tape on top */}
+                            <div
+                                className="absolute -top-3 left-1/2 transform -translate-x-1/2 w-16 h-6 rounded-sm shadow-sm z-10"
+                                style={{ backgroundColor: typeInfo.tapeColor, opacity: 0.9 }}
+                            ></div>
+
+                            {/* Paper card */}
+                            <div
+                                className="p-5 pt-6 rounded-sm shadow-lg border border-gray-200 min-h-[160px] relative"
+                                style={{
+                                    backgroundColor: typeInfo.paperColor,
+                                    boxShadow: '4px 4px 10px rgba(0,0,0,0.1)'
+                                }}
+                            >
                                 <button
                                     onClick={(e) => { e.stopPropagation(); deleteNotice(notice.id); }}
-                                    className="text-red-400 hover:text-red-600 p-1"
+                                    className="absolute top-2 right-2 text-gray-400 hover:text-red-500 p-1"
                                 >
-                                    <Trash2 size={16} />
+                                    <Trash2 size={14} />
                                 </button>
+
+                                <span className="text-2xl mb-2 block">{typeInfo.icon}</span>
+                                <h4 className="font-bold text-gray-800 mb-2 text-lg" style={{ fontFamily: 'cursive, serif' }}>
+                                    {notice.title}
+                                </h4>
+                                <p className="text-sm text-gray-600 flex items-center gap-1">
+                                    <Calendar size={12} /> {new Date(notice.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                                </p>
                             </div>
-                            <h4 className="font-bold text-gray-800 mb-2 text-lg">{notice.title}</h4>
-                            <p className="text-sm text-gray-500 flex items-center gap-1">
-                                <Calendar size={14} /> {new Date(notice.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                            </p>
                         </div>
                     );
                 })}
                 {notices.length === 0 && (
                     <div className="col-span-full text-center py-16 text-gray-400">
-                        <Bell size={48} className="mx-auto mb-4 opacity-50" />
-                        <p>No notices yet. Click "Add Notice" to create one.</p>
+                        <Pin size={48} className="mx-auto mb-4 opacity-50" />
+                        <p>No notices yet. Click "Add Notice" to pin one.</p>
                     </div>
                 )}
             </div>
 
-            {/* Notice Slide Preview Modal - Professional Design */}
+            {/* Notice Slide - Paper/Sticky Note Style */}
             {selectedNotice && (
-                <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden">
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
                         <div className="p-4 flex justify-between items-center border-b bg-gray-50">
-                            <h3 className="font-bold text-gray-800">Notice Preview</h3>
+                            <h3 className="font-bold text-gray-800">📄 Notice Preview</h3>
                             <div className="flex gap-2">
-                                <button onClick={downloadSlide} className="p-2 bg-indigo-100 text-indigo-600 rounded-xl hover:bg-indigo-200 transition-colors">
+                                <button onClick={downloadSlide} className="p-2 bg-amber-100 text-amber-600 rounded-xl hover:bg-amber-200">
                                     <Download size={20} />
                                 </button>
-                                <button onClick={shareSlide} className="p-2 bg-green-100 text-green-600 rounded-xl hover:bg-green-200 transition-colors">
+                                <button onClick={shareSlide} className="p-2 bg-green-100 text-green-600 rounded-xl hover:bg-green-200">
                                     <Share2 size={20} />
                                 </button>
-                                <button onClick={() => setSelectedNotice(null)} className="p-2 bg-gray-100 text-gray-600 rounded-xl hover:bg-gray-200 transition-colors">
+                                <button onClick={() => setSelectedNotice(null)} className="p-2 bg-gray-100 text-gray-600 rounded-xl hover:bg-gray-200">
                                     ✕
                                 </button>
                             </div>
                         </div>
 
-                        {/* Professional Slide Design */}
+                        {/* Paper Note Slide Design */}
                         <div
                             ref={slideRef}
-                            className="p-8 relative"
-                            style={{ background: 'linear-gradient(135deg, #1e3a5f 0%, #0c1929 100%)' }}
+                            className="p-6 relative"
+                            style={{
+                                backgroundColor: '#f5f0e6',
+                                backgroundImage: 'repeating-linear-gradient(#f5f0e6 0px, #f5f0e6 24px, #e0d6c8 25px)'
+                            }}
                         >
-                            {/* Header with Logo */}
-                            <div className="flex items-center justify-between mb-6">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-14 h-14 rounded-full border-3 border-white/30 overflow-hidden bg-white shadow-lg flex items-center justify-center">
-                                        <img src="/school-logo.png" alt="Logo" className="w-10 h-10 object-contain" />
-                                    </div>
-                                    <div>
-                                        <p className="text-white/70 text-xs font-medium tracking-wider">ROOTS OF WISDOM</p>
-                                        <p className="text-white font-bold">School & College</p>
-                                    </div>
-                                </div>
-                                <div className={`px-4 py-2 rounded-full text-sm font-bold ${getTypeConfig(selectedNotice.type).light} ${getTypeConfig(selectedNotice.type).text}`}>
-                                    {noticeTypes.find(t => t.value === selectedNotice.type)?.icon} {noticeTypes.find(t => t.value === selectedNotice.type)?.label}
+                            {/* Tape strips */}
+                            <div
+                                className="absolute top-0 left-4 w-12 h-8"
+                                style={{ backgroundColor: getTypeInfo(selectedNotice.type).tapeColor, transform: 'rotate(-5deg)', opacity: 0.85 }}
+                            ></div>
+                            <div
+                                className="absolute top-0 right-4 w-12 h-8"
+                                style={{ backgroundColor: getTypeInfo(selectedNotice.type).tapeColor, transform: 'rotate(5deg)', opacity: 0.85 }}
+                            ></div>
+
+                            {/* School header */}
+                            <div className="flex items-center justify-center gap-3 mb-6 mt-4">
+                                <img src="/school-logo.png" alt="Logo" className="w-12 h-12 object-contain" />
+                                <div className="text-center">
+                                    <p className="text-xs text-gray-500 font-medium tracking-wider">ROOTS OF WISDOM</p>
+                                    <p className="text-sm font-bold text-gray-700">School & College</p>
                                 </div>
                             </div>
 
-                            {/* Notice Content */}
-                            <div className="bg-white rounded-2xl p-6 shadow-xl mb-6">
-                                <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center border-b pb-4">{selectedNotice.title}</h2>
-                                <p className="text-gray-700 leading-relaxed text-center">{selectedNotice.description || 'No additional details provided.'}</p>
+                            {/* Type badge */}
+                            <div className="flex justify-center mb-4">
+                                <span
+                                    className="px-4 py-2 rounded-full text-white font-bold text-sm shadow-md"
+                                    style={{ backgroundColor: getTypeInfo(selectedNotice.type).tapeColor }}
+                                >
+                                    {getTypeInfo(selectedNotice.type).icon} {getTypeInfo(selectedNotice.type).label}
+                                </span>
                             </div>
+
+                            {/* Title - handwritten style */}
+                            <h2
+                                className="text-2xl font-bold text-gray-800 text-center mb-4 pb-3 border-b-2 border-dashed border-gray-300"
+                                style={{ fontFamily: 'Georgia, serif' }}
+                            >
+                                {selectedNotice.title}
+                            </h2>
+
+                            {/* Content */}
+                            <p
+                                className="text-gray-700 text-center leading-relaxed mb-6"
+                                style={{ fontFamily: 'Georgia, serif', fontSize: '16px' }}
+                            >
+                                {selectedNotice.description || '(No details provided)'}
+                            </p>
 
                             {/* Date */}
-                            <div className="flex justify-center mb-6">
-                                <div className="bg-white/10 backdrop-blur px-6 py-3 rounded-xl flex items-center gap-2 text-white">
-                                    <Calendar size={18} />
-                                    <span className="font-medium">{new Date(selectedNotice.date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                            <div className="flex justify-center mb-4">
+                                <div className="bg-white/80 px-4 py-2 rounded-lg flex items-center gap-2 text-gray-600 shadow-sm">
+                                    <Calendar size={16} />
+                                    <span className="font-medium">
+                                        {new Date(selectedNotice.date).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' })}
+                                    </span>
                                 </div>
                             </div>
 
                             {/* Footer */}
-                            <div className="flex justify-between items-center pt-4 border-t border-white/20">
-                                <div className="text-white/50 text-xs">Powered by Ustaz.AI</div>
-                                <div className="flex items-center gap-2 text-white/70">
-                                    <CheckCircle size={18} />
-                                    <span className="text-sm">Official Notice</span>
-                                </div>
+                            <div className="text-center pt-4 border-t border-dashed border-gray-300">
+                                <p className="text-xs text-gray-400">Powered by Ustaz.AI</p>
                             </div>
                         </div>
                     </div>

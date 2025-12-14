@@ -54,4 +54,26 @@ export interface AttendanceRecord {
   }[];
 }
 
-export type AppView = 'LOGIN' | 'DASHBOARD' | 'ADD_CLASS' | 'CREATE_TEST' | 'PAPER_RESULT' | 'ATTENDANCE';
+export type NoticeType = 'holiday' | 'announcement' | 'important' | 'event';
+
+export interface Notice {
+  id: string;
+  title: string;
+  description: string;
+  type: NoticeType;
+  date: string;
+  expiryDate?: string;
+  createdAt: string;
+}
+
+export interface Homework {
+  id: string;
+  classId: string;
+  subject: string;
+  description: string;
+  assignedDate: string;
+  dueDate: string;
+  createdAt: string;
+}
+
+export type AppView = 'LOGIN' | 'DASHBOARD' | 'ADD_CLASS' | 'CREATE_TEST' | 'PAPER_RESULT' | 'ATTENDANCE' | 'NOTICES' | 'HOMEWORK';

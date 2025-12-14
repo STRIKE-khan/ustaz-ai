@@ -1,11 +1,13 @@
 import React from 'react';
-import { 
-  LayoutDashboard, 
-  Users, 
-  FileSpreadsheet, 
-  Award, 
-  CalendarCheck, 
-  LogOut 
+import {
+  LayoutDashboard,
+  Users,
+  FileSpreadsheet,
+  Award,
+  CalendarCheck,
+  LogOut,
+  Bell,
+  BookOpen
 } from 'lucide-react';
 import { AppView } from '../types';
 
@@ -23,6 +25,8 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, onLogout, teach
     { id: 'ATTENDANCE' as AppView, label: 'Attendance', icon: CalendarCheck },
     { id: 'CREATE_TEST' as AppView, label: 'Class Test', icon: FileSpreadsheet },
     { id: 'PAPER_RESULT' as AppView, label: 'Exam Result', icon: Award },
+    { id: 'NOTICES' as AppView, label: 'Notice Board', icon: Bell },
+    { id: 'HOMEWORK' as AppView, label: 'Homework Diary', icon: BookOpen },
   ];
 
   return (
@@ -40,11 +44,10 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, onLogout, teach
           <button
             key={item.id}
             onClick={() => setView(item.id)}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-              currentView === item.id 
-                ? 'bg-indigo-700 text-white' 
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${currentView === item.id
+                ? 'bg-indigo-700 text-white'
                 : 'text-indigo-200 hover:bg-indigo-800 hover:text-white'
-            }`}
+              }`}
           >
             <item.icon size={20} />
             <span>{item.label}</span>

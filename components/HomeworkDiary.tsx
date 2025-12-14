@@ -1,6 +1,6 @@
 import React, { useState, useRef, useMemo } from 'react';
 import { ClassGroup, Homework } from '../types';
-import { BookOpen, Plus, Trash2, Download, Share2, Clock, CheckCircle, X } from 'lucide-react';
+import { BookOpen, Plus, Trash2, Download, Share2, Clock, CheckCircle, X, ChevronDown, Edit2 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 
 interface HomeworkDiaryProps {
@@ -32,6 +32,7 @@ const HomeworkDiary: React.FC<HomeworkDiaryProps> = ({ classes, homework, addHom
     const [diaryEntries, setDiaryEntries] = useState<{ id: string; subject: string; description: string }[]>([
         { id: '1', subject: '', description: '' }
     ]);
+    const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
     const [selectedDiaryGroup, setSelectedDiaryGroup] = useState<{ classId: string, date: string, items: Homework[] } | null>(null);
     const slideRef = useRef<HTMLDivElement>(null);
@@ -82,7 +83,7 @@ const HomeworkDiary: React.FC<HomeworkDiaryProps> = ({ classes, homework, addHom
                 dueDate,
                 createdAt: new Date().toISOString(),
             };
-            addHomework(newHomework);
+            addHomework(newHomework); // App.tsx handles state update
         });
 
         // Reset
@@ -182,18 +183,51 @@ const HomeworkDiary: React.FC<HomeworkDiaryProps> = ({ classes, homework, addHom
                     <div className="space-y-3 mb-6">
                         <label className="block text-sm font-medium text-gray-700">Subjects & Tasks</label>
                         {diaryEntries.map((entry, index) => (
-                            <div key={entry.id} className="flex gap-2 items-start animate-fadeIn">
+                            <div key={entry.id} className="flex gap-2 items-start animate-fadeIn relative z-10">
                                 <div className="w-1/3 relative">
-                                    <input
-                                        placeholder="Subject"
-                                        value={entry.subject}
-                                        onChange={(e) => handleEntryChange(entry.id, 'subject', e.target.value)}
-                                        className="w-full p-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 outline-none"
-                                        list={`suggestions-${index}`}
-                                    />
-                                    <datalist id={`suggestions-${index}`}>
-                                        {subjectSuggestions.map(s => <option key={s} value={s} />)}
-                                    </datalist>
+                                    <div className="relative">
+                                        <input
+                                            placeholder="Subject"
+                                            value={entry.subject}
+                                            onChange={(e) => handleEntryChange(entry.id, 'subject', e.target.value)}
+                                            onFocus={() => setActiveDropdown(entry.id)}
+                                            className="w-full p-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 outline-none pr-10"
+                                        />
+                                        <button
+                                            onClick={() => setActiveDropdown(activeDropdown === entry.id ? null : entry.id)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-indigo-600"
+                                        >
+                                            <ChevronDown size={16} />
+                                        </button>
+                                    </div>
+
+                                    {/* Custom Dropdown */}
+                                    {activeDropdown === entry.id && subjectSuggestions.length > 0 && (
+                                        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-50 max-h-48 overflow-y-auto">
+                                            {subjectSuggestions.map(s => (
+                                                <button
+                                                    key={s}
+                                                    onMouseDown={() => {
+                                                        handleEntryChange(entry.id, 'subject', s);
+                                                        setActiveDropdown(null);
+                                                    }}
+                                                    className="w-full text-left px-4 py-2 hover:bg-indigo-50 text-gray-700 text-sm border-b last:border-0"
+                                                >
+                                                    {s}
+                                                </button>
+                                            ))}
+                                            <button
+                                                onMouseDown={() => {
+                                                    handleEntryChange(entry.id, 'subject', '');
+                                                    setActiveDropdown(null);
+                                                    // This effectively clears it for custom typing if they want to start fresh or they can just type in the input directly
+                                                }}
+                                                className="w-full text-left px-4 py-2 bg-gray-50 text-indigo-600 font-bold text-sm hover:bg-gray-100 flex items-center gap-2"
+                                            >
+                                                <Edit2 size={14} /> Type Custom Subject
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                                 <input
                                     placeholder="Task description..."

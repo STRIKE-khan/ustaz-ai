@@ -71,10 +71,10 @@ const App: React.FC = () => {
     setClasses(classes.filter(c => c.id !== id));
   };
 
-  const addNotice = (notice: Notice) => setNotices([...notices, notice]);
-  const deleteNotice = (id: string) => setNotices(notices.filter(n => n.id !== id));
-  const addHomework = (hw: Homework) => setHomework([...homework, hw]);
-  const deleteHomework = (id: string) => setHomework(homework.filter(h => h.id !== id));
+  const addNotice = (notice: Notice) => setNotices(prev => [...prev, notice]);
+  const deleteNotice = (id: string) => setNotices(prev => prev.filter(n => n.id !== id));
+  const addHomework = (hw: Homework) => setHomework(prev => [...prev, hw]);
+  const deleteHomework = (id: string) => setHomework(prev => prev.filter(h => h.id !== id));
 
   // Mobile Sidebar toggle
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);

@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { ClassGroup, TestRecord, AttendanceStatus } from '../types';
-import { Check, Download, Sparkles, RefreshCw, Share2, FileText, CheckCircle } from 'lucide-react';
+import { Check, Download, Sparkles, RefreshCw, Share2, FileText, CheckCircle, AlertCircle } from 'lucide-react';
 import { generateTestAnalysis } from '../services/geminiService';
 
 declare const html2canvas: any;
@@ -48,6 +48,7 @@ const TestGenerator: React.FC<TestGeneratorProps> = ({ classes }) => {
 
   const [aiAnalysis, setAiAnalysis] = useState<string>('');
   const [isAnalysing, setIsAnalysing] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const slideRef = useRef<HTMLDivElement>(null);
 
@@ -69,8 +70,13 @@ const TestGenerator: React.FC<TestGeneratorProps> = ({ classes }) => {
 
   const handleMarkChange = (studentId: string, val: string) => {
     const num = parseFloat(val);
-    // Validate: marks cannot exceed total marks
-    const validatedNum = isNaN(num) ? 0 : Math.min(Math.max(0, num), totalMarks);
+    if (num > totalMarks) {
+      setErrorMsg(`Marks cannot exceed ${totalMarks}!`);
+      setTimeout(() => setErrorMsg(null), 3000);
+      return;
+    }
+    setErrorMsg(null);
+    const validatedNum = isNaN(num) ? 0 : Math.max(0, num);
     setMarksMap(prev => ({ ...prev, [studentId]: validatedNum }));
   };
 
@@ -143,7 +149,14 @@ const TestGenerator: React.FC<TestGeneratorProps> = ({ classes }) => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto animate-fadeIn">
+    <div className="max-w-5xl mx-auto animate-fadeIn relative">
+      {/* Error Toast */}
+      {errorMsg && (
+        <div className="fixed top-20 right-5 bg-red-500 text-white px-6 py-3 rounded-xl shadow-2xl z-50 animate-bounce flex items-center gap-2 font-bold">
+          <AlertCircle color="white" /> {errorMsg}
+        </div>
+      )}
+
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
           <FileText className="text-indigo-600" /> Create Test Result
@@ -403,7 +416,6 @@ const TestGenerator: React.FC<TestGeneratorProps> = ({ classes }) => {
               {isAnalysing ? <RefreshCw className="animate-spin" /> : <Sparkles size={20} />}
               {aiAnalysis ? 'Regenerate Analysis' : 'Get Ustaz Analysis'}
             </button>
-
             <div className="bg-blue-50 p-4 rounded-xl border border-blue-200 text-sm text-blue-800">
               <p>💡 Tip: Click "Share" to send directly to students or parents.</p>
             </div>

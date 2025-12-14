@@ -188,18 +188,31 @@ const ExamGenerator: React.FC<ExamGeneratorProps> = ({ classes }) => {
   };
 
   const exportToPDF = () => {
-    const doc = new jsPDF();
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
 
-    // Header
-    doc.setFontSize(18);
-    doc.text("ROOTS OF WISDOM SCHOOL & COLLEGE", 105, 15, { align: "center" });
-    doc.setFontSize(14);
-    doc.text(`Award List: ${examName}`, 105, 22, { align: "center" });
-    doc.setFontSize(10);
-    doc.text(`Class: ${selectedClass?.name} | Date: ${new Date().toLocaleDateString()}`, 105, 28, { align: "center" });
+    // Elegant Header
+    doc.setFillColor(255, 255, 255);
+    doc.rect(0, 0, 297, 210, 'F'); // White background
 
-    // Table Data
-    const tableHead = [['Roll No', 'Name', ...subjects.map(s => `${s.name} (${s.total})`), 'Obtained', 'Total', '%', 'Pos']];
+    // School Name
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(22);
+    doc.setTextColor(33, 33, 33);
+    doc.text("ROOTS OF WISDOM SCHOOL & COLLEGE", 148.5, 20, { align: "center" });
+
+    // Exam Name
+    doc.setFontSize(16);
+    doc.setTextColor(16, 185, 129); // Emerald
+    doc.text(`AWARD LIST: ${examName.toUpperCase()}`, 148.5, 30, { align: "center" });
+
+    // Meta Info
+    doc.setFontSize(12);
+    doc.setTextColor(80, 80, 80);
+    const dateStr = new Date().toLocaleDateString();
+    doc.text(`Class: ${selectedClass?.name}   |   Date: ${dateStr}`, 148.5, 38, { align: "center" });
+
+    // Table
+    const tableHead = [['Roll No', 'Student Name', ...subjects.map(s => `${s.name} (${s.total})`), 'Obtained', 'Total', '%', 'Pos']];
 
     const sortedStudents = selectedClass?.students
       .map(s => {
@@ -222,12 +235,44 @@ const ExamGenerator: React.FC<ExamGeneratorProps> = ({ classes }) => {
     autoTable(doc, {
       head: tableHead,
       body: tableBody,
-      startY: 35,
+      startY: 45,
       theme: 'grid',
-      headStyles: { fillColor: [16, 185, 129] }, // Emerald color
+      headStyles: {
+        fillColor: [33, 33, 33], // Dark Gray/Black for professional look
+        textColor: [255, 255, 255],
+        fontSize: 10,
+        fontStyle: 'bold',
+        halign: 'center'
+      },
+      styles: {
+        fontSize: 9,
+        cellPadding: 3,
+        overflow: 'linebreak',
+        halign: 'center', // Center all data
+        valign: 'middle'
+      },
+      columnStyles: {
+        1: { halign: 'left', cellWidth: 40 }, // Name column left aligned and wider
+      },
+      alternateRowStyles: {
+        fillColor: [245, 245, 245]
+      },
+      margin: { top: 45 }
     });
 
-    doc.save(`AwardList_${examName}.pdf`);
+    // Signature Area
+    const finalY = (doc as any).lastAutoTable.finalY || 150;
+
+    if (finalY < 180) {
+      doc.setLineWidth(0.5);
+      doc.line(30, finalY + 30, 80, finalY + 30); // Line 1
+      doc.text("Class Teacher", 55, finalY + 36, { align: 'center' });
+
+      doc.line(220, finalY + 30, 270, finalY + 30); // Line 2
+      doc.text("Principal", 245, finalY + 36, { align: 'center' });
+    }
+
+    doc.save(`AwardList_${selectedClass?.name}_${examName}.pdf`);
   };
 
   const exportToExcel = () => {

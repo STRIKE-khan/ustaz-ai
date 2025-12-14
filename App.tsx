@@ -34,9 +34,9 @@ const App: React.FC = () => {
     }
   }, []);
 
-  // Save data whenever they change
+  // Save data whenever they change - Fixed persistence logic
   useEffect(() => {
-    if (classes.length > 0) localStorage.setItem('ustaz_classes', JSON.stringify(classes));
+    localStorage.setItem('ustaz_classes', JSON.stringify(classes));
   }, [classes]);
 
   useEffect(() => {
@@ -134,32 +134,49 @@ const App: React.FC = () => {
       />
 
       {/* Mobile Header */}
-      <div className="md:hidden fixed w-full bg-indigo-900 text-white z-20 flex justify-between items-center p-4 shadow-md">
-        <h1 className="font-bold text-lg flex items-center gap-2">
-          Ustaz.AI <span className="text-xs border border-white px-1 rounded">RWS</span>
+      <div className="md:hidden fixed top-0 left-0 right-0 bg-white/90 backdrop-blur-md z-30 flex justify-between items-center px-4 py-3 shadow-sm border-b border-gray-100">
+        <h1 className="font-bold text-xl text-indigo-900 flex items-center gap-2">
+          <span className="text-yellow-500">Ustaz</span>.AI
         </h1>
-        <button onClick={toggleMobileMenu}>
-          {isMobileMenuOpen ? <X /> : <Menu />}
+        <button onClick={toggleMobileMenu} className="p-2 bg-gray-100 rounded-lg text-gray-700 hover:bg-gray-200 transition-colors">
+          {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
       </div>
 
-      {/* Mobile Menu Overlay */}
-      {isMobileMenuOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-10 md:hidden" onClick={toggleMobileMenu}>
-          <div className="bg-white h-full w-3/4 p-4" onClick={e => e.stopPropagation()}>
-            <nav className="space-y-4 mt-12">
-              <button onClick={() => { setView('DASHBOARD'); setIsMobileMenuOpen(false); }} className="block w-full text-left p-2 font-bold text-gray-800">Dashboard</button>
-              <button onClick={() => { setView('ADD_CLASS'); setIsMobileMenuOpen(false); }} className="block w-full text-left p-2 font-bold text-gray-800">Manage Classes</button>
-              <button onClick={() => { setView('CREATE_TEST'); setIsMobileMenuOpen(false); }} className="block w-full text-left p-2 font-bold text-gray-800">Class Test</button>
-              <button onClick={() => { setView('PAPER_RESULT'); setIsMobileMenuOpen(false); }} className="block w-full text-left p-2 font-bold text-gray-800">Exam Result</button>
-              <button onClick={() => { setView('ATTENDANCE'); setIsMobileMenuOpen(false); }} className="block w-full text-left p-2 font-bold text-gray-800">Attendance</button>
-              <button onClick={() => { setView('NOTICES'); setIsMobileMenuOpen(false); }} className="block w-full text-left p-2 font-bold text-gray-800">Notice Board</button>
-              <button onClick={() => { setView('HOMEWORK'); setIsMobileMenuOpen(false); }} className="block w-full text-left p-2 font-bold text-gray-800">Homework Diary</button>
-              <button onClick={handleLogout} className="block w-full text-left p-2 text-red-600 font-bold mt-8">Logout</button>
-            </nav>
+      {/* Mobile Menu Overlay with Slide Effect */}
+      <div className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-300 md:hidden ${isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`} onClick={toggleMobileMenu}>
+        <div
+          className={`absolute top-0 left-0 h-full w-3/4 max-w-[300px] bg-white shadow-2xl p-6 transition-transform duration-300 ease-out ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}
+          onClick={e => e.stopPropagation()}
+        >
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-indigo-900">Menu</h2>
+            <p className="text-gray-500 text-sm">Welcome, {teacherName || 'Teacher'}</p>
           </div>
+          <nav className="space-y-2">
+            {[
+              { id: 'DASHBOARD', label: 'Dashboard', icon: '🏠' },
+              { id: 'ADD_CLASS', label: 'Manage Classes', icon: '👥' },
+              { id: 'CREATE_TEST', label: 'Class Test', icon: '📝' },
+              { id: 'PAPER_RESULT', label: 'Exam Result', icon: '🏆' },
+              { id: 'ATTENDANCE', label: 'Attendance', icon: '📅' },
+              { id: 'NOTICES', label: 'Notice Board', icon: '📢' },
+              { id: 'HOMEWORK', label: 'Homework Diary', icon: '📚' }
+            ].map(item => (
+              <button
+                key={item.id}
+                onClick={() => { setView(item.id as AppView); setIsMobileMenuOpen(false); }}
+                className={`w-full text-left px-4 py-3 rounded-xl font-medium transition-all flex items-center gap-3 ${view === item.id ? 'bg-indigo-50 text-indigo-600 shadow-sm' : 'text-gray-600 hover:bg-gray-50'}`}
+              >
+                <span>{item.icon}</span> {item.label}
+              </button>
+            ))}
+            <button onClick={handleLogout} className="w-full text-left px-4 py-3 text-red-600 font-medium mt-6 hover:bg-red-50 rounded-xl flex items-center gap-3">
+              <span>🚪</span> Logout
+            </button>
+          </nav>
         </div>
-      )}
+      </div>
 
       {/* Main Content */}
       <main className="flex-1 md:ml-64 p-4 md:p-8 pt-20 md:pt-8 overflow-y-auto">

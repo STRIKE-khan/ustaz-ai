@@ -187,6 +187,15 @@ const ExamGenerator: React.FC<ExamGeneratorProps> = ({ classes }) => {
     }
   };
 
+  const getShortName = (name: string) => {
+    const map: { [key: string]: string } = {
+      'Physics': 'Phy', 'Chemistry': 'Chem', 'Biology': 'Bio', 'Mathematics': 'Math', 'English': 'Eng',
+      'Urdu': 'Urd', 'Islamiat': 'Isl', 'Pak Studies': 'P.St', 'Computer': 'Comp', 'General Science': 'G.Sci',
+      'Social Studies': 'S.St', 'history': 'Hist', 'Geography': 'Geog', 'Nazra Quran': 'Nazra', 'Arabic': 'Arb'
+    };
+    return map[name] || name.substring(0, 4);
+  };
+
   const exportToPDF = () => {
     const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
 
@@ -212,7 +221,8 @@ const ExamGenerator: React.FC<ExamGeneratorProps> = ({ classes }) => {
     doc.text(`Class: ${selectedClass?.name}   |   Date: ${dateStr}`, 148.5, 38, { align: "center" });
 
     // Table
-    const tableHead = [['Roll No', 'Student Name', ...subjects.map(s => `${s.name} (${s.total})`), 'Obtained', 'Total', '%', 'Pos']];
+    // Headers: S.No | Roll No | Name | Sub1 | Sub2 ... | Obt | Total | % | Pos
+    const tableHead = [['S.No', 'Roll No', 'Student Name', ...subjects.map(s => `${getShortName(s.name)}\n(${s.total})`), 'Obt', 'Total', '%', 'Pos']];
 
     const sortedStudents = selectedClass?.students
       .map(s => {
@@ -223,7 +233,8 @@ const ExamGenerator: React.FC<ExamGeneratorProps> = ({ classes }) => {
       .sort((a, b) => b.ob - a.ob);
 
     const tableBody = sortedStudents?.map((s, idx) => [
-      s.roll,
+      idx + 1,        // S.No (Auto increment)
+      s.roll,         // Roll No (Exam Specific)
       s.name,
       ...subjects.map(sub => marksData[s.id]?.[sub.name] || '-'),
       s.ob,
@@ -238,21 +249,26 @@ const ExamGenerator: React.FC<ExamGeneratorProps> = ({ classes }) => {
       startY: 45,
       theme: 'grid',
       headStyles: {
-        fillColor: [33, 33, 33], // Dark Gray/Black for professional look
+        fillColor: [33, 33, 33], // Dark Gray/Black
         textColor: [255, 255, 255],
         fontSize: 10,
         fontStyle: 'bold',
-        halign: 'center'
+        halign: 'center',
+        valign: 'middle'
       },
       styles: {
         fontSize: 9,
-        cellPadding: 3,
+        cellPadding: 2,
         overflow: 'linebreak',
-        halign: 'center', // Center all data
-        valign: 'middle'
+        halign: 'center',
+        valign: 'middle',
+        lineWidth: 0.1,
+        lineColor: [200, 200, 200]
       },
       columnStyles: {
-        1: { halign: 'left', cellWidth: 40 }, // Name column left aligned and wider
+        0: { cellWidth: 12 }, // S.No
+        1: { cellWidth: 20 }, // Roll No
+        2: { halign: 'left', cellWidth: 45 }, // Name
       },
       alternateRowStyles: {
         fillColor: [245, 245, 245]

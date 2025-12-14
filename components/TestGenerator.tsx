@@ -69,7 +69,9 @@ const TestGenerator: React.FC<TestGeneratorProps> = ({ classes }) => {
 
   const handleMarkChange = (studentId: string, val: string) => {
     const num = parseFloat(val);
-    setMarksMap(prev => ({ ...prev, [studentId]: isNaN(num) ? 0 : num }));
+    // Validate: marks cannot exceed total marks
+    const validatedNum = isNaN(num) ? 0 : Math.min(Math.max(0, num), totalMarks);
+    setMarksMap(prev => ({ ...prev, [studentId]: validatedNum }));
   };
 
   const toggleStatus = (studentId: string) => {

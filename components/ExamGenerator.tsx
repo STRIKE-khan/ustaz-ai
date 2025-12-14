@@ -118,7 +118,10 @@ const ExamGenerator: React.FC<ExamGeneratorProps> = ({ classes }) => {
   };
 
   const handleMarkChange = (studentId: string, subjectIdx: number, value: string) => {
-    const val = parseFloat(value) || 0;
+    const inputVal = parseFloat(value) || 0;
+    // Validate: marks cannot exceed subject's total marks
+    const maxMarks = subjects[subjectIdx].total;
+    const val = Math.min(Math.max(0, inputVal), maxMarks);
     setMarksData(prev => ({
       ...prev,
       [studentId]: {

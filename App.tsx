@@ -65,6 +65,10 @@ const App: React.FC = () => {
     setClasses(classes.map(c => c.id === updatedClass.id ? updatedClass : c));
   };
 
+  const deleteClass = (id: string) => {
+    setClasses(classes.filter(c => c.id !== id));
+  };
+
   const addNotice = (notice: Notice) => setNotices([...notices, notice]);
   const deleteNotice = (id: string) => setNotices(notices.filter(n => n.id !== id));
   const addHomework = (hw: Homework) => setHomework([...homework, hw]);
@@ -200,7 +204,7 @@ const App: React.FC = () => {
           </div>
         )}
 
-        {view === 'ADD_CLASS' && <ClassManager classes={classes} addClass={addClass} updateClass={updateClass} />}
+        {view === 'ADD_CLASS' && <ClassManager classes={classes} addClass={addClass} updateClass={updateClass} deleteClass={deleteClass} />}
         {view === 'CREATE_TEST' && <TestGenerator classes={classes} />}
         {view === 'PAPER_RESULT' && <ExamGenerator classes={classes} />}
         {view === 'ATTENDANCE' && <AttendanceManager classes={classes} />}

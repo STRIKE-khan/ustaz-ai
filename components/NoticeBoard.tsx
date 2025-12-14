@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Notice, NoticeType } from '../types';
-import { Bell, Plus, Trash2, Download, Share2, Calendar, AlertTriangle, PartyPopper, Megaphone, Star, CheckCircle } from 'lucide-react';
+import { Bell, Plus, Trash2, Download, Share2, Calendar, CheckCircle } from 'lucide-react';
 
 declare const html2canvas: any;
 
@@ -19,11 +19,12 @@ const NoticeBoard: React.FC<NoticeBoardProps> = ({ notices, addNotice, deleteNot
     const [selectedNotice, setSelectedNotice] = useState<Notice | null>(null);
     const slideRef = useRef<HTMLDivElement>(null);
 
-    const noticeTypes: { value: NoticeType; label: string; icon: React.ReactNode; color: string; bgGradient: string }[] = [
-        { value: 'holiday', label: 'Holiday', icon: <PartyPopper size={18} />, color: 'bg-green-500', bgGradient: 'from-green-600 to-emerald-700' },
-        { value: 'announcement', label: 'Announcement', icon: <Megaphone size={18} />, color: 'bg-blue-500', bgGradient: 'from-blue-600 to-indigo-700' },
-        { value: 'important', label: 'Important', icon: <AlertTriangle size={18} />, color: 'bg-red-500', bgGradient: 'from-red-600 to-rose-700' },
-        { value: 'event', label: 'Event', icon: <Star size={18} />, color: 'bg-purple-500', bgGradient: 'from-purple-600 to-violet-700' },
+    // Professional notice types with elegant colors
+    const noticeTypes: { value: NoticeType; label: string; icon: string; color: string }[] = [
+        { value: 'holiday', label: 'Holiday', icon: '🏖️', color: 'emerald' },
+        { value: 'announcement', label: 'Announcement', icon: '📢', color: 'indigo' },
+        { value: 'important', label: 'Important', icon: '⚠️', color: 'amber' },
+        { value: 'event', label: 'Event', icon: '🎉', color: 'purple' },
     ];
 
     const handleSubmit = () => {
@@ -70,7 +71,15 @@ const NoticeBoard: React.FC<NoticeBoardProps> = ({ notices, addNotice, deleteNot
         }
     };
 
-    const getTypeInfo = (t: NoticeType) => noticeTypes.find(nt => nt.value === t)!;
+    const getTypeConfig = (t: NoticeType) => {
+        const configs = {
+            holiday: { bg: 'bg-emerald-600', gradient: 'from-emerald-600 to-teal-700', light: 'bg-emerald-100', text: 'text-emerald-700' },
+            announcement: { bg: 'bg-indigo-600', gradient: 'from-indigo-600 to-blue-700', light: 'bg-indigo-100', text: 'text-indigo-700' },
+            important: { bg: 'bg-amber-600', gradient: 'from-amber-600 to-orange-700', light: 'bg-amber-100', text: 'text-amber-700' },
+            event: { bg: 'bg-purple-600', gradient: 'from-purple-600 to-violet-700', light: 'bg-purple-100', text: 'text-purple-700' },
+        };
+        return configs[t];
+    };
 
     return (
         <div className="max-w-5xl mx-auto animate-fadeIn">
@@ -114,20 +123,23 @@ const NoticeBoard: React.FC<NoticeBoardProps> = ({ notices, addNotice, deleteNot
                     </div>
 
                     <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Notice Type</label>
                         <div className="flex flex-wrap gap-2">
-                            {noticeTypes.map((nt) => (
-                                <button
-                                    key={nt.value}
-                                    onClick={() => setType(nt.value)}
-                                    className={`px-5 py-3 rounded-xl flex items-center gap-2 transition-all font-medium ${type === nt.value
-                                            ? `${nt.color} text-white shadow-lg`
-                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                        }`}
-                                >
-                                    {nt.icon} {nt.label}
-                                </button>
-                            ))}
+                            {noticeTypes.map((nt) => {
+                                const config = getTypeConfig(nt.value);
+                                return (
+                                    <button
+                                        key={nt.value}
+                                        onClick={() => setType(nt.value)}
+                                        className={`px-5 py-3 rounded-xl flex items-center gap-2 transition-all font-medium ${type === nt.value
+                                                ? `${config.bg} text-white shadow-lg`
+                                                : `${config.light} ${config.text} hover:shadow-md`
+                                            }`}
+                                    >
+                                        {nt.icon} {nt.label}
+                                    </button>
+                                );
+                            })}
                         </div>
                     </div>
 
@@ -162,19 +174,18 @@ const NoticeBoard: React.FC<NoticeBoardProps> = ({ notices, addNotice, deleteNot
             {/* Notice List */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                 {notices.map((notice) => {
-                    const typeInfo = getTypeInfo(notice.type);
+                    const config = getTypeConfig(notice.type);
+                    const typeInfo = noticeTypes.find(t => t.value === notice.type)!;
                     return (
                         <div
                             key={notice.id}
                             onClick={() => setSelectedNotice(notice)}
-                            className={`p-5 rounded-2xl shadow-sm border-l-4 cursor-pointer hover:shadow-lg transition-all bg-white ${notice.type === 'holiday' ? 'border-green-500' :
-                                    notice.type === 'important' ? 'border-red-500' :
-                                        notice.type === 'event' ? 'border-purple-500' : 'border-blue-500'
+                            className={`p-5 rounded-2xl shadow-sm border-l-4 cursor-pointer hover:shadow-lg transition-all bg-white ${config.bg.replace('bg-', 'border-')
                                 }`}
                         >
                             <div className="flex justify-between items-start mb-3">
-                                <span className={`px-3 py-1 rounded-full text-xs text-white font-bold ${typeInfo.color}`}>
-                                    {typeInfo.label}
+                                <span className={`px-3 py-1 rounded-full text-sm font-bold ${config.light} ${config.text}`}>
+                                    {typeInfo.icon} {typeInfo.label}
                                 </span>
                                 <button
                                     onClick={(e) => { e.stopPropagation(); deleteNotice(notice.id); }}
@@ -185,7 +196,7 @@ const NoticeBoard: React.FC<NoticeBoardProps> = ({ notices, addNotice, deleteNot
                             </div>
                             <h4 className="font-bold text-gray-800 mb-2 text-lg">{notice.title}</h4>
                             <p className="text-sm text-gray-500 flex items-center gap-1">
-                                <Calendar size={14} /> {notice.date}
+                                <Calendar size={14} /> {new Date(notice.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                             </p>
                         </div>
                     );
@@ -198,7 +209,7 @@ const NoticeBoard: React.FC<NoticeBoardProps> = ({ notices, addNotice, deleteNot
                 )}
             </div>
 
-            {/* Notice Slide Preview Modal */}
+            {/* Notice Slide Preview Modal - Professional Design */}
             {selectedNotice && (
                 <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden">
@@ -218,42 +229,47 @@ const NoticeBoard: React.FC<NoticeBoardProps> = ({ notices, addNotice, deleteNot
                         </div>
 
                         {/* Professional Slide Design */}
-                        <div ref={slideRef} className={`p-8 bg-gradient-to-br ${getTypeInfo(selectedNotice.type).bgGradient} text-white relative`}>
-                            {/* School Logo */}
-                            <div className="absolute top-4 right-4 w-16 h-16 bg-white rounded-full p-2 shadow-lg">
-                                <img src="/school-logo.png" alt="Logo" className="w-full h-full object-contain" />
-                            </div>
-
-                            <div className="text-center mb-6">
-                                <p className="text-sm opacity-80 font-medium tracking-wider">ROOTS OF WISDOM SCHOOL & COLLEGE</p>
-                                <div className="mt-4 inline-flex items-center gap-2 bg-white/20 backdrop-blur px-4 py-2 rounded-full">
-                                    {getTypeInfo(selectedNotice.type).icon}
-                                    <span className="font-bold uppercase text-sm">{getTypeInfo(selectedNotice.type).label}</span>
+                        <div
+                            ref={slideRef}
+                            className="p-8 relative"
+                            style={{ background: 'linear-gradient(135deg, #1e3a5f 0%, #0c1929 100%)' }}
+                        >
+                            {/* Header with Logo */}
+                            <div className="flex items-center justify-between mb-6">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-14 h-14 rounded-full border-3 border-white/30 overflow-hidden bg-white shadow-lg flex items-center justify-center">
+                                        <img src="/school-logo.png" alt="Logo" className="w-10 h-10 object-contain" />
+                                    </div>
+                                    <div>
+                                        <p className="text-white/70 text-xs font-medium tracking-wider">ROOTS OF WISDOM</p>
+                                        <p className="text-white font-bold">School & College</p>
+                                    </div>
+                                </div>
+                                <div className={`px-4 py-2 rounded-full text-sm font-bold ${getTypeConfig(selectedNotice.type).light} ${getTypeConfig(selectedNotice.type).text}`}>
+                                    {noticeTypes.find(t => t.value === selectedNotice.type)?.icon} {noticeTypes.find(t => t.value === selectedNotice.type)?.label}
                                 </div>
                             </div>
 
-                            <div className="text-center mb-6">
-                                <h2 className="text-3xl font-bold mt-4">{selectedNotice.title}</h2>
+                            {/* Notice Content */}
+                            <div className="bg-white rounded-2xl p-6 shadow-xl mb-6">
+                                <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center border-b pb-4">{selectedNotice.title}</h2>
+                                <p className="text-gray-700 leading-relaxed text-center">{selectedNotice.description || 'No additional details provided.'}</p>
                             </div>
 
-                            <div className="bg-white text-gray-800 rounded-2xl p-6 mb-6 shadow-xl">
-                                <p className="text-lg leading-relaxed">{selectedNotice.description || 'No description provided.'}</p>
+                            {/* Date */}
+                            <div className="flex justify-center mb-6">
+                                <div className="bg-white/10 backdrop-blur px-6 py-3 rounded-xl flex items-center gap-2 text-white">
+                                    <Calendar size={18} />
+                                    <span className="font-medium">{new Date(selectedNotice.date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                                </div>
                             </div>
 
-                            <div className="flex justify-between items-center text-sm">
-                                <span className="flex items-center gap-2 opacity-80">
-                                    <Calendar size={16} /> {new Date(selectedNotice.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
-                                </span>
-                            </div>
-
-                            {/* Footer with Signature */}
-                            <div className="mt-8 pt-4 border-t border-white/30 flex justify-between items-end">
-                                <div className="text-xs opacity-60">Powered by Ustaz.AI</div>
-                                <div className="text-center">
-                                    <div className="flex justify-center mb-1">
-                                        <CheckCircle size={24} />
-                                    </div>
-                                    <span className="text-xs opacity-80">Principal's Seal</span>
+                            {/* Footer */}
+                            <div className="flex justify-between items-center pt-4 border-t border-white/20">
+                                <div className="text-white/50 text-xs">Powered by Ustaz.AI</div>
+                                <div className="flex items-center gap-2 text-white/70">
+                                    <CheckCircle size={18} />
+                                    <span className="text-sm">Official Notice</span>
                                 </div>
                             </div>
                         </div>

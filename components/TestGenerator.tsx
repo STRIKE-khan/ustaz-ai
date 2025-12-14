@@ -9,20 +9,32 @@ interface TestGeneratorProps {
   classes: ClassGroup[];
 }
 
-// Subject suggestions based on class level
+// Punjab Textbook Board Subject Suggestions by Class
 const getSubjectSuggestions = (className: string): string[] => {
   const name = className.toLowerCase();
-  const baseSubjects = ['English', 'Urdu', 'Mathematics', 'Islamiat', 'Pakistan Studies'];
 
-  if (name.includes('9') || name.includes('10') || name.includes('matric')) {
-    return [...baseSubjects, 'Physics', 'Chemistry', 'Biology', 'Computer Science'];
-  } else if (name.includes('11') || name.includes('12') || name.includes('inter') || name.includes('fsc')) {
-    return ['Physics', 'Chemistry', 'Biology', 'Mathematics', 'English', 'Urdu', 'Computer Science'];
-  } else if (name.includes('6') || name.includes('7') || name.includes('8')) {
-    return [...baseSubjects, 'Science', 'Social Studies', 'Arabic'];
-  } else {
-    return ['Urdu', 'English', 'Mathematics', 'Nazra', 'Drawing', 'General Science'];
+  // Primary (1-5)
+  if (name.includes('1') || name.includes('2') || name.includes('3') || name.includes('4') || name.includes('5') || name.includes('primary')) {
+    return ['Urdu', 'English', 'Mathematics', 'Nazra Quran', 'General Science', 'Islamiat', 'Drawing'];
   }
+
+  // Middle (6-8)
+  if (name.includes('6') || name.includes('7') || name.includes('8') || name.includes('middle')) {
+    return ['Urdu', 'English', 'Mathematics', 'Science', 'Social Studies', 'Islamiat', 'Arabic', 'Computer'];
+  }
+
+  // Matric (9-10)
+  if (name.includes('9') || name.includes('10') || name.includes('matric')) {
+    return ['Physics', 'Chemistry', 'Biology', 'Mathematics', 'English', 'Urdu', 'Islamiat', 'Pak Studies', 'Computer'];
+  }
+
+  // Inter (11-12)
+  if (name.includes('11') || name.includes('12') || name.includes('inter') || name.includes('fsc') || name.includes('ics')) {
+    return ['Physics', 'Chemistry', 'Biology', 'Mathematics', 'English', 'Urdu', 'Computer Science'];
+  }
+
+  // Default
+  return ['Urdu', 'English', 'Mathematics', 'Islamiat', 'General Science'];
 };
 
 const TestGenerator: React.FC<TestGeneratorProps> = ({ classes }) => {
@@ -272,9 +284,9 @@ const TestGenerator: React.FC<TestGeneratorProps> = ({ classes }) => {
                 className="bg-white p-8 mx-auto shadow-2xl relative overflow-hidden"
                 style={{ width: '800px', minHeight: '1000px', background: 'linear-gradient(135deg, #ffffff 0%, #f0f4ff 100%)' }}
               >
-                {/* School Logo */}
-                <div className="absolute top-4 right-4 w-20 h-20">
-                  <img src="/school-logo.png" alt="School Logo" className="w-full h-full object-contain" />
+                {/* School Logo in Circle */}
+                <div className="absolute top-4 right-4 w-20 h-20 rounded-full border-4 border-indigo-600 overflow-hidden bg-white shadow-lg flex items-center justify-center">
+                  <img src="/school-logo.png" alt="School Logo" className="w-16 h-16 object-contain" />
                 </div>
 
                 {/* Header */}

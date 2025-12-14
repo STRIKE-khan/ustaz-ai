@@ -7,9 +7,11 @@ import ExamGenerator from './components/ExamGenerator';
 import AttendanceManager from './components/AttendanceManager';
 import NoticeBoard from './components/NoticeBoard';
 import HomeworkDiary from './components/HomeworkDiary';
+import SplashScreen from './components/SplashScreen';
 import { Menu, X, ArrowLeft } from 'lucide-react';
 
 const App: React.FC = () => {
+  const [showSplash, setShowSplash] = useState(true);
   const [teacherName, setTeacherName] = useState<string>('');
   const [view, setView] = useState<AppView>('LOGIN');
   const [classes, setClasses] = useState<ClassGroup[]>([]);
@@ -76,6 +78,11 @@ const App: React.FC = () => {
 
   // Mobile Sidebar toggle
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+
+  // Show splash screen on app load
+  if (showSplash) {
+    return <SplashScreen onComplete={() => setShowSplash(false)} />;
+  }
 
   if (view === 'LOGIN') {
     return (

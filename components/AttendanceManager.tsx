@@ -138,10 +138,10 @@ const AttendanceManager: React.FC<AttendanceManagerProps> = ({ classes }) => {
                           key={status}
                           onClick={() => setStatus(student.id, status)}
                           className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${attendance[student.id] === status
-                              ? status === AttendanceStatus.PRESENT ? 'bg-green-600 text-white shadow-lg'
-                                : status === AttendanceStatus.ABSENT ? 'bg-red-600 text-white shadow-lg'
-                                  : 'bg-yellow-500 text-white shadow-lg'
-                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                            ? status === AttendanceStatus.PRESENT ? 'bg-green-600 text-white shadow-lg'
+                              : status === AttendanceStatus.ABSENT ? 'bg-red-600 text-white shadow-lg'
+                                : 'bg-yellow-500 text-white shadow-lg'
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                             }`}
                         >
                           {status}
@@ -179,9 +179,9 @@ const AttendanceManager: React.FC<AttendanceManagerProps> = ({ classes }) => {
               className="bg-white p-8 min-w-[600px] relative"
               style={{ background: 'linear-gradient(to bottom right, #ffffff, #f0f4ff)' }}
             >
-              {/* School Logo */}
-              <div className="absolute top-4 right-4 w-16 h-16">
-                <img src="/school-logo.png" alt="School Logo" className="w-full h-full object-contain" />
+              {/* School Logo in Circle */}
+              <div className="absolute top-4 right-4 w-16 h-16 rounded-full border-3 border-indigo-600 overflow-hidden bg-white shadow-lg flex items-center justify-center">
+                <img src="/school-logo.png" alt="School Logo" className="w-12 h-12 object-contain" />
               </div>
 
               <div className="border-b-4 border-indigo-600 pb-4 mb-4">
@@ -211,8 +211,8 @@ const AttendanceManager: React.FC<AttendanceManagerProps> = ({ classes }) => {
                       <td className="p-3 font-semibold text-gray-800">{s.name}</td>
                       <td className="p-3 text-center">
                         <span className={`px-4 py-1 rounded-full text-xs font-bold uppercase ${attendance[s.id] === AttendanceStatus.PRESENT ? 'bg-green-100 text-green-800' :
-                            attendance[s.id] === AttendanceStatus.ABSENT ? 'bg-red-100 text-red-800' :
-                              'bg-yellow-100 text-yellow-800'
+                          attendance[s.id] === AttendanceStatus.ABSENT ? 'bg-red-100 text-red-800' :
+                            'bg-yellow-100 text-yellow-800'
                           }`}>
                           {attendance[s.id] || AttendanceStatus.PRESENT}
                         </span>

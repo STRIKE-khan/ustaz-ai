@@ -180,8 +180,8 @@ const AttendanceManager: React.FC<AttendanceManagerProps> = ({ classes }) => {
               style={{ background: 'linear-gradient(to bottom right, #ffffff, #f0f4ff)' }}
             >
               {/* School Logo */}
-              <div className="absolute top-4 right-4 w-16 h-16 flex items-center justify-center">
-                <img src="/school-logo.png" alt="School Logo" className="w-full h-full object-contain filter drop-shadow-md" />
+              <div className="absolute top-4 right-4 w-20 h-20 flex items-center justify-center p-2 bg-white rounded-full border-4 border-double border-indigo-100 shadow-lg">
+                <img src="/school-logo.png" alt="School Logo" className="w-full h-full object-contain filter drop-shadow-sm" />
               </div>
 
               <div className="border-b-4 border-indigo-600 pb-4 mb-4">
@@ -231,7 +231,7 @@ const AttendanceManager: React.FC<AttendanceManagerProps> = ({ classes }) => {
 
               {/* Footer with Signature Tick */}
               <div className="mt-8 flex justify-between items-end border-t-2 border-indigo-100 pt-4">
-                <div className="text-xs text-gray-400">Powered by Ustaz.AI</div>
+
                 <div className="text-center">
                   <div className="w-32 border-b-2 border-gray-400 mb-2 flex justify-center pt-2">
                     <CheckCircle size={24} className="text-green-600" />

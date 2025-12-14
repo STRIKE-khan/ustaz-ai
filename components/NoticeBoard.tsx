@@ -242,10 +242,12 @@ const NoticeBoard: React.FC<NoticeBoardProps> = ({ notices, addNotice, deleteNot
 
                             {/* School header */}
                             <div className="flex items-center justify-center gap-3 mb-6 mt-4">
-                                <img src="/school-logo.png" alt="Logo" className="w-12 h-12 object-contain" />
+                                <div className="p-1 bg-white border-2 border-dashed border-gray-300 shadow-sm rotate-[-2deg]">
+                                    <img src="/school-logo.png" alt="Logo" className="w-12 h-12 object-contain" />
+                                </div>
                                 <div className="text-center">
-                                    <p className="text-xs text-gray-500 font-medium tracking-wider">ROOTS OF WISDOM</p>
-                                    <p className="text-sm font-bold text-gray-700">School & College</p>
+                                    <h1 className="text-xl font-bold text-gray-800" style={{ fontFamily: 'Georgia, serif' }}>School Name</h1>
+                                    <p className="text-xs text-gray-600">Est. 1990</p>
                                 </div>
                             </div>
 
@@ -287,7 +289,7 @@ const NoticeBoard: React.FC<NoticeBoardProps> = ({ notices, addNotice, deleteNot
 
                             {/* Footer */}
                             <div className="text-center pt-4 border-t border-dashed border-gray-300">
-                                <p className="text-xs text-gray-400">Powered by Ustaz.AI</p>
+
                             </div>
                         </div>
                     </div>

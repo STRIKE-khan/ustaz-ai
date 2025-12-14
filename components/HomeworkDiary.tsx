@@ -210,7 +210,7 @@ const HomeworkDiary: React.FC<HomeworkDiaryProps> = ({ classes, homework, addHom
                     const isOverdue = daysLeft === 'Overdue';
                     const isDueToday = daysLeft === 'Due Today';
                     const rotation = idx % 2 === 0 ? 'rotate-1' : '-rotate-1';
-                    
+
                     return (
                         <div
                             key={hw.id}
@@ -218,15 +218,15 @@ const HomeworkDiary: React.FC<HomeworkDiaryProps> = ({ classes, homework, addHom
                             className={`relative cursor-pointer hover:scale-105 transition-all ${rotation}`}
                             style={{ transform: `rotate(${idx % 3 - 1}deg)` }}
                         >
-                             {/* Tape on top */}
-                             <div 
+                            {/* Tape on top */}
+                            <div
                                 className="absolute -top-3 left-1/2 transform -translate-x-1/2 w-16 h-6 rounded-sm shadow-sm z-10"
                                 style={{ backgroundColor: '#e0f2f1', opacity: 0.9 }}
                             ></div>
 
-                            <div 
+                            <div
                                 className="p-5 pt-6 rounded-sm shadow-lg border border-gray-200 min-h-[180px] relative bg-white"
-                                style={{ 
+                                style={{
                                     backgroundImage: 'repeating-linear-gradient(white 0px, white 24px, #f0f4f8 25px)',
                                     boxShadow: '4px 4px 10px rgba(0,0,0,0.1)'
                                 }}
@@ -237,7 +237,7 @@ const HomeworkDiary: React.FC<HomeworkDiaryProps> = ({ classes, homework, addHom
                                 >
                                     <Trash2 size={14} />
                                 </button>
-                                
+
                                 <span className="inline-block px-2 py-1 bg-indigo-100 text-indigo-800 rounded text-xs font-bold mb-2">
                                     {getClassName(hw.classId)}
                                 </span>
@@ -286,21 +286,23 @@ const HomeworkDiary: React.FC<HomeworkDiaryProps> = ({ classes, homework, addHom
                         </div>
 
                         {/* Paper Slide Design */}
-                        <div 
-                            ref={slideRef} 
+                        <div
+                            ref={slideRef}
                             className="p-8 relative"
-                            style={{ 
+                            style={{
                                 backgroundColor: '#fff',
                                 backgroundImage: 'linear-gradient(#e5e7eb 1px, transparent 1px)',
                                 backgroundSize: '100% 25px'
                             }}
                         >
-                             {/* Tape strips */}
-                             <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-32 h-8 bg-indigo-100/80 rotate-1 shadow-sm"></div>
+                            {/* Tape strips */}
+                            <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-32 h-8 bg-indigo-100/80 rotate-1 shadow-sm"></div>
 
                             {/* School Header */}
                             <div className="flex items-center justify-center gap-3 mb-8 mt-4 pt-4">
-                                <img src="/school-logo.png" alt="Logo" className="w-14 h-14 object-contain" />
+                                <div className="p-1 bg-white border-2 border-dashed border-indigo-200 shadow-sm rotate-2">
+                                    <img src="/school-logo.png" alt="Logo" className="w-14 h-14 object-contain" />
+                                </div>
                                 <div className="text-center">
                                     <p className="text-xs text-gray-500 font-medium tracking-wider">ROOTS OF WISDOM</p>
                                     <p className="text-sm font-bold text-gray-700">School & College</p>
@@ -336,9 +338,9 @@ const HomeworkDiary: React.FC<HomeworkDiaryProps> = ({ classes, homework, addHom
                                     <span className="text-xs text-gray-400">Teacher's Sign</span>
                                 </div>
                             </div>
-                            
+
                             <div className="text-center mt-6">
-                                <p className="text-[10px] text-gray-400">Powered by Ustaz.AI</p>
+
                             </div>
                         </div>
                     </div>

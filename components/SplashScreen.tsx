@@ -23,9 +23,10 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
             {/* Main content */}
             <div className="relative z-10 text-center animate-fadeIn">
                 {/* Logo */}
-                <div className="mb-8">
-                    <div className="w-28 h-28 mx-auto flex items-center justify-center animate-scaleIn">
-                        <img src="/school-logo.png" alt="School Logo" className="w-full h-full object-contain filter drop-shadow-2xl" />
+                <div className="mb-10 relative">
+                    <div className="absolute inset-0 bg-white/20 blur-xl rounded-full animate-pulse"></div>
+                    <div className="w-32 h-32 mx-auto flex items-center justify-center relative p-4 bg-white/10 backdrop-blur-md rounded-full border border-white/20 shadow-2xl animate-scaleIn">
+                        <img src="/school-logo.png" alt="School Logo" className="w-full h-full object-contain filter drop-shadow-xl" />
                     </div>
                 </div>
 

@@ -182,28 +182,33 @@ const App: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div onClick={() => setView('ADD_CLASS')} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer flex flex-col items-center text-center">
-                <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-3 text-xl font-bold">{classes.length}</div>
+              <div onClick={() => setView('ADD_CLASS')} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer flex flex-col items-center text-center group">
+                <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-3 text-xl font-bold group-hover:scale-110 transition-transform">{classes.length}</div>
                 <h3 className="font-bold text-gray-800">Active Classes</h3>
                 <p className="text-sm text-gray-500 mt-1">Add or manage students</p>
               </div>
-              <div onClick={() => setView('CREATE_TEST')} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer flex flex-col items-center text-center">
-                <div className="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-3">📝</div>
+              <div onClick={() => setView('CREATE_TEST')} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer flex flex-col items-center text-center group">
+                <div className="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">📝</div>
                 <h3 className="font-bold text-gray-800">Create Test</h3>
                 <p className="text-sm text-gray-500 mt-1">Generate result slides</p>
               </div>
-              <div onClick={() => setView('ATTENDANCE')} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer flex flex-col items-center text-center">
-                <div className="w-12 h-12 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center mb-3">📅</div>
+              <div onClick={() => setView('ATTENDANCE')} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer flex flex-col items-center text-center group">
+                <div className="w-12 h-12 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">📅</div>
                 <h3 className="font-bold text-gray-800">Attendance</h3>
                 <p className="text-sm text-gray-500 mt-1">Mark daily presence</p>
               </div>
-              <div onClick={() => setView('NOTICES')} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer flex flex-col items-center text-center">
-                <div className="w-12 h-12 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center mb-3">📢</div>
+              <div onClick={() => setView('PAPER_RESULT')} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer flex flex-col items-center text-center group">
+                <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">🏆</div>
+                <h3 className="font-bold text-gray-800">Exam Result</h3>
+                <p className="text-sm text-gray-500 mt-1">Create award lists</p>
+              </div>
+              <div onClick={() => setView('NOTICES')} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer flex flex-col items-center text-center group">
+                <div className="w-12 h-12 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">📢</div>
                 <h3 className="font-bold text-gray-800">Notice Board</h3>
                 <p className="text-sm text-gray-500 mt-1">Share announcements</p>
               </div>
-              <div onClick={() => setView('HOMEWORK')} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer flex flex-col items-center text-center">
-                <div className="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-3">📚</div>
+              <div onClick={() => setView('HOMEWORK')} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer flex flex-col items-center text-center group">
+                <div className="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">📚</div>
                 <h3 className="font-bold text-gray-800">Homework Diary</h3>
                 <p className="text-sm text-gray-500 mt-1">Assign homework</p>
               </div>

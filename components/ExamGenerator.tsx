@@ -355,8 +355,8 @@ const ExamGenerator: React.FC<ExamGeneratorProps> = ({ classes }) => {
               <div className="flex items-start justify-between border-b-4 border-emerald-600 pb-4 mb-6">
                 <div className="flex items-center gap-4">
                   {/* School Logo */}
-                  <div className="w-20 h-20 flex items-center justify-center">
-                    <img src="/school-logo.png" alt="Logo" className="w-full h-full object-contain filter drop-shadow-md" />
+                  <div className="w-24 h-24 flex items-center justify-center p-2 bg-white rounded-full border-4 border-double border-emerald-100 shadow-lg">
+                    <img src="/school-logo.png" alt="Logo" className="w-full h-full object-contain filter drop-shadow-sm" />
                   </div>
                   <div>
                     <h3 className="text-lg font-bold text-emerald-700 tracking-widest">ROOTS OF WISDOM SCHOOL & COLLEGE</h3>
@@ -423,7 +423,7 @@ const ExamGenerator: React.FC<ExamGeneratorProps> = ({ classes }) => {
                   </div>
                   <p className="text-gray-600 font-medium text-sm">Class Teacher</p>
                 </div>
-                <div className="text-xs text-gray-400">Powered by Ustaz.AI</div>
+
                 <div className="text-center">
                   <div className="w-32 border-t-2 border-gray-400 pt-2 flex justify-center">
                     <CheckCircle size={20} className="text-emerald-600" />

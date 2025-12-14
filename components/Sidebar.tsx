@@ -44,9 +44,9 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, onLogout, teach
           <button
             key={item.id}
             onClick={() => setView(item.id)}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${currentView === item.id
-                ? 'bg-indigo-700 text-white'
-                : 'text-indigo-200 hover:bg-indigo-800 hover:text-white'
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-300 ${currentView === item.id
+              ? 'bg-indigo-700 text-white shadow-lg translate-x-1'
+              : 'text-indigo-200 hover:bg-indigo-800 hover:text-white hover:translate-x-1'
               }`}
           >
             <item.icon size={20} />

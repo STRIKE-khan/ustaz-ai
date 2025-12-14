@@ -187,11 +187,17 @@ const TestGenerator: React.FC<TestGeneratorProps> = ({ classes }) => {
                     <button
                       key={i}
                       className="w-full text-left px-4 py-3 hover:bg-indigo-50 text-gray-800 transition-colors first:rounded-t-xl last:rounded-b-xl"
-                      onMouseDown={() => setSubject(s)}
+                      onClick={() => { setSubject(s); setShowSubjectSuggestions(false); }}
                     >
                       {s}
                     </button>
                   ))}
+                  <button
+                    className="w-full text-left px-4 py-3 hover:bg-gray-100 text-indigo-600 font-medium border-t"
+                    onClick={() => { setShowSubjectSuggestions(false); }}
+                  >
+                    + Type Custom Subject
+                  </button>
                 </div>
               )}
             </div>
@@ -287,8 +293,8 @@ const TestGenerator: React.FC<TestGeneratorProps> = ({ classes }) => {
                 style={{ width: '800px', minHeight: '1000px', background: 'linear-gradient(135deg, #ffffff 0%, #f0f4ff 100%)' }}
               >
                 {/* School Logo */}
-                <div className="absolute top-4 right-4 w-20 h-20 flex items-center justify-center">
-                  <img src="/school-logo.png" alt="School Logo" className="w-full h-full object-contain filter drop-shadow-md" />
+                <div className="absolute top-4 right-4 w-24 h-24 flex items-center justify-center p-2 bg-white rounded-full border-4 border-double border-indigo-100 shadow-lg">
+                  <img src="/school-logo.png" alt="School Logo" className="w-full h-full object-contain filter drop-shadow-sm" />
                 </div>
 
                 {/* Header */}
@@ -365,7 +371,7 @@ const TestGenerator: React.FC<TestGeneratorProps> = ({ classes }) => {
                       <p className="text-gray-600 text-sm font-medium">Teacher's Signature</p>
                     </div>
                     <div className="text-right text-xs text-gray-400">
-                      Powered by Ustaz.AI
+
                     </div>
                   </div>
                 </div>
